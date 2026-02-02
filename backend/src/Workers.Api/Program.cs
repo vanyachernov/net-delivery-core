@@ -1,6 +1,10 @@
+using Workers.Infrastructure;
+using Workers.Infrastructure.Persistence;
+
 var builder = WebApplication.CreateBuilder(args);
 {
     builder.Services.AddOpenApi();
+    builder.Services.AddInfrastructure(builder.Configuration);
 }
 
 var app = builder.Build();
@@ -10,5 +14,12 @@ var app = builder.Build();
         app.MapOpenApi();
     }
 
+    app.MapGet("/health-db", async (ApplicationDbContext context) =>
+    {
+        var canConnect = await context.Database.CanConnectAsync();
+        return new { Status = "Healthy", DatabaseConnected = canConnect };
+    });
+
     app.UseHttpsRedirection();
+    app.Run();
 }
