@@ -1,3 +1,4 @@
+using Scalar.AspNetCore;
 using Workers.Infrastructure;
 using Workers.Infrastructure.Persistence;
 
@@ -16,6 +17,7 @@ app.MapDefaultEndpoints();
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
+        app.MapScalarApiReference();
     }
 
     app.MapGet("/health-db", async (ApplicationDbContext context) =>
