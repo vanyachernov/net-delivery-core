@@ -49,4 +49,3 @@ public class Company : BaseEntity
     /// </summary>
     public ICollection<CompanyMember> Members { get; set; } = [];
 }
-}

@@ -103,4 +103,3 @@ public class WorkerProfile : BaseEntity
     /// </summary>
     public ICollection<WorkerCategory> Categories { get; set; } = [];
 }
-}
