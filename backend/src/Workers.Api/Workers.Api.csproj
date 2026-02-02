@@ -25,6 +25,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Workers.Infrastructure\Workers.Infrastructure.csproj" />
+      <ProjectReference Include="..\Workers.ServiceDefaults\Workers.ServiceDefaults.csproj" />
     </ItemGroup>
 
 </Project>
