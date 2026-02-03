@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Workers.Application.Common.Interfaces;
 using Workers.Domain.Entities.Categories;
 using Workers.Domain.Entities.Communication;
 using Workers.Domain.Entities.Companies;
@@ -10,7 +11,7 @@ using Workers.Domain.Entities.Workers;
 
 namespace Workers.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : DbContext,IUnitOfWork
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -33,6 +34,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<ReviewMedia> ReviewMedia => Set<ReviewMedia>();
     public DbSet<Payment> Payments => Set<Payment>();
+
+    public Task<int> SaveChangesAsync(CancellationToken ct) => base.SaveChangesAsync(ct);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

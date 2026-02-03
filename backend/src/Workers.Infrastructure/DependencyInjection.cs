@@ -1,6 +1,11 @@
 using Microsoft.Extensions.Hosting;
+using System.Reflection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Workers.Application.Common.Interfaces;
 using Workers.Infrastructure.Persistence;
+using Workers.Infrastructure.Persistence.Repositories;
 
 namespace Workers.Infrastructure;
 
@@ -13,5 +18,10 @@ public static class DependencyInjection
             {
                 options.UseSnakeCaseNamingConvention();
             });
+      
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
+
+        return services;
     }
 }

@@ -1,9 +1,9 @@
 using Serilog;
 using Scalar.AspNetCore;
 using Workers.Infrastructure;
-using Workers.Infrastructure.Persistence;
-using Workers.Api.Models;
 using Workers.Api.Middlewares;
+using Workers.Application;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +26,7 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
 builder.AddServiceDefaults();
 {
     builder.Services.AddOpenApi();
-    builder.AddInfrastructure();
+    builder.Services.AddApplication().AddInfrastructure(builder.Configuration);
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
     builder.Services.AddControllers();
