@@ -1,22 +1,28 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Workers.Application.Common.Interfaces;
 using Workers.Application.Users.DTOs;
 
 namespace Workers.Application.Users.Queries.GetUserById;
 
-public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto?>
+public class GetUserByIdQueryHandler(
+    IUserRepository users,
+    ILogger<GetUserByIdQueryHandler> logger) 
+    : IRequestHandler<GetUserByIdQuery, UserDto?>
 {
-    private readonly IUserRepository _users;
-
-    public GetUserByIdQueryHandler(IUserRepository users)
-    {
-        _users = users;
-    }
-
     public async Task<UserDto?> Handle(GetUserByIdQuery request, CancellationToken ct)
     {
-        var user = await _users.GetByIdAsync(request.Id, ct);
-        if (user is null) return null;
+        logger.LogInformation("Retrieving user by ID: {UserId}", request.Id);
+        
+        var user = await users.GetByIdAsync(request.Id, ct);
+        
+        if (user is null)
+        {
+            logger.LogWarning("User with ID {UserId} was not found", request.Id);
+            return null;
+        }
+
+        logger.LogInformation("User with ID {UserId} successfully retrieved", request.Id);
 
         return new UserDto(
             user.Id,

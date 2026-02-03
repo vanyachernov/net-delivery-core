@@ -16,6 +16,7 @@ public class UsersController(IMediator mediator) : ApiControllerBase
         CancellationToken ct)
     {
         var data = await mediator.Send(command, ct);
+        
         return OkResult(data);
     }
         
@@ -26,14 +27,22 @@ public class UsersController(IMediator mediator) : ApiControllerBase
         CancellationToken ct)
     {
         var user = await mediator.Send(new GetUserByIdQuery(id), ct);
-        return user is null ? NotFoundResult() : OkResult(user);
+
+        if (user is null)
+        {
+            return NotFoundResult();
+        }
+        
+        return OkResult(user);
     }
 
     [HttpGet]
     public async Task<IActionResult> GetList(
-        [FromQuery] int page = 1, 
-        [FromQuery] int pageSize = 20, 
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
-            => OkResult(await mediator.Send(new GetUsersListQuery(page, pageSize), ct));
+    {
+        return OkResult(await mediator.Send(new GetUsersListQuery(page, pageSize), ct));
+    }
 }
     

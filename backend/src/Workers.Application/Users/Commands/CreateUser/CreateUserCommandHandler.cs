@@ -1,32 +1,40 @@
 namespace Workers.Application.Users.Commands.CreateUser;
 
 using MediatR;
-using Workers.Application.Common.Interfaces;
-using Workers.Application.Users.DTOs;
+using Microsoft.Extensions.Logging;
+using Common.Interfaces;
+using DTOs;
 using Workers.Domain.Entities.Users;
 
 
-public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserDto>
+public class CreateUserCommandHandler(
+    IUserRepository users, 
+    IUnitOfWork uow,
+    ILogger<CreateUserCommandHandler> logger)
+    : IRequestHandler<CreateUserCommand, UserDto>
 {
-    private readonly IUserRepository _users;
-    private readonly IUnitOfWork _uow;
-
-    public CreateUserCommandHandler(IUserRepository users, IUnitOfWork uow)
+    public async Task<UserDto> Handle(
+        CreateUserCommand request, 
+        CancellationToken cancellationToken)
     {
-        _users = users;
-        _uow = uow;
-    }
-
-    public async Task<UserDto> Handle(CreateUserCommand request, CancellationToken ct)
-    {
+        logger.LogInformation("Starting the process of creating a new user with email: {Email}", request.Email);
+        
         var email = request.Email.Trim().ToLowerInvariant();
         var phone = request.PhoneNumber.Trim();
 
-        if (await _users.EmailExistsAsync(email, ct))
-            throw new InvalidOperationException("User with this email already exists.");
+        logger.LogInformation("Checking if email or phone already exists...");
 
-        if (await _users.PhoneExistsAsync(phone, ct))
+        if (await users.EmailExistsAsync(email, cancellationToken))
+        {
+            logger.LogWarning("Failed to create user: Email {Email} already exists", email);
+            throw new InvalidOperationException("User with this email already exists.");
+        }
+
+        if (await users.PhoneExistsAsync(phone, cancellationToken))
+        {
+            logger.LogWarning("Failed to create user: Phone {Phone} already exists", phone);
             throw new InvalidOperationException("User with this phone already exists.");
+        }
 
         var user = new User
         {
@@ -35,14 +43,19 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
             FirstName = request.FirstName?.Trim(),
             LastName = request.LastName?.Trim(),
             Role = request.Role,
-
             IsEmailVerified = false,
             IsPhoneVerified = false,
             AvatarUrl = null
         };
 
-        await _users.AddAsync(user, ct);
-        await _uow.SaveChangesAsync(ct);
+        logger.LogInformation("Creating user entity and adding to repository...");
+
+        await users.AddAsync(user, cancellationToken);
+        
+        logger.LogInformation("Saving changes to the database...");
+        await uow.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("User created successfully with ID: {UserId}", user.Id);
 
         return new UserDto(
             user.Id,
