@@ -1,15 +1,17 @@
 using Scalar.AspNetCore;
 using Workers.Infrastructure;
-using Workers.Infrastructure.Persistence;
-using Workers.Api.Models;
 using Workers.Api.Middlewares;
+using Workers.Application;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 {
     builder.Services.AddOpenApi();
-    builder.Services.AddInfrastructure(builder.Configuration);
+    //builder.Services.AddApplication().AddInfrastructure(builder.Configuration);
+    builder.Services.AddApplication().AddInfrastructure(builder.Configuration);
+
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
     builder.Services.AddControllers();
