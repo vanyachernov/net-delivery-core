@@ -26,7 +26,8 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
 builder.AddServiceDefaults();
 {
     builder.Services.AddOpenApi();
-    builder.Services.AddApplication().AddInfrastructure(builder.Configuration);
+    builder.Services.AddApplication();
+    builder.AddInfrastructure();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
     builder.Services.AddControllers();

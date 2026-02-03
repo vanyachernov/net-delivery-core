@@ -35,7 +35,7 @@ public class ApplicationDbContext : DbContext,IUnitOfWork
     public DbSet<ReviewMedia> ReviewMedia => Set<ReviewMedia>();
     public DbSet<Payment> Payments => Set<Payment>();
 
-    public Task<int> SaveChangesAsync(CancellationToken ct) => base.SaveChangesAsync(ct);
+    public override Task<int> SaveChangesAsync(CancellationToken ct = default) => base.SaveChangesAsync(ct);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

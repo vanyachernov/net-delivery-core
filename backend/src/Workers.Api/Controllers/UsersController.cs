@@ -26,7 +26,7 @@ public class UsersController(IMediator mediator) : ApiControllerBase
         CancellationToken ct)
     {
         var user = await mediator.Send(new GetUserByIdQuery(id), ct);
-        return user is null ? NotFound() : OkResult(user);
+        return user is null ? NotFoundResult() : OkResult(user);
     }
 
     [HttpGet]
