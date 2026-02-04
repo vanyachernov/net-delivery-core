@@ -1,45 +1,57 @@
-using Microsoft.AspNetCore.Mvc;
-using Workers.Domain.Entities.Categories;
+    using MediatR;
+    using Microsoft.AspNetCore.Mvc;
+    using Workers.Application.Categories.Commands;
+    using Workers.Application.Categories.Commands.CreateCategory;
+    using Workers.Application.Categories.Queries;
+    using Workers.Domain.Entities.Categories;
 
-namespace Workers.Api.Controllers;
+    namespace Workers.Api.Controllers;
 
-public class CategoriesController : ApiControllerBase
-{
-    [HttpGet]
-    public IActionResult GetAll()
+    [ApiController]
+    [Route("api/categories")]
+    public class CategoriesController(IMediator mediator) : ApiControllerBase
     {
-        var categories = new List<Category>
+        [HttpGet]
+        public async Task<IActionResult> Get(
+            [FromQuery] Guid? parentId,
+            [FromQuery] string mode = "direct",
+            CancellationToken ct = default)
         {
-            new()
-            {
-                Id = Guid.NewGuid(), 
-                Name = "Electrical", 
-                Slug = "electrical", 
-                CreatedAt = DateTime.UtcNow
-            }
-        };
+            var parsedMode = mode.Equals("all", StringComparison.OrdinalIgnoreCase)
+                ? CategoryLoadMode.All
+                : CategoryLoadMode.Direct;
 
-        return OkResult(categories);
-    }
-
-    [HttpGet("{id:guid}")]
-    public IActionResult GetById(Guid id)
-    {
-        if (id == Guid.Empty)
-        {
-            return NotFoundResult(new
-            {
-                message = $"Category with ID {id} not found"
-            });
+            var data = await mediator.Send(new GetCategoriesQuery(parentId, parsedMode), ct);
+            return OkResult(data);
         }
 
-        var category = new Category
+        [HttpPost] // Admin
+        public async Task<IActionResult> Create(
+            [FromBody] CreateCategoryCommand cmd,
+            CancellationToken ct)
         {
-            Id = id, 
-            Name = "Test Category", 
-            Slug = "test"
-        };
-        
-        return OkResult(category);
+            var created = await mediator.Send(cmd, ct);
+            return OkResult(created);
+        }
+
+        [HttpPut("{id:guid}")] // Admin
+        public async Task<IActionResult> Update(
+            Guid id, 
+            [FromBody] UpdateCategoryCommand cmd, 
+            CancellationToken ct)
+        {
+            if (id != cmd.Id) return BadRequestResult(new { message = "Route id != body id" });
+            var updated = await mediator.Send(cmd, ct);
+            return OkResult(updated);
+        }
+
+        [HttpDelete("{id:guid}")] // Admin
+        public async Task<IActionResult> Delete(
+            Guid id, 
+            CancellationToken ct)
+        {
+            await mediator.Send(new DeleteCategoryCommand(id), ct);
+            return OkResult(new { message = "Deleted" });
+        }
     }
-}
+
