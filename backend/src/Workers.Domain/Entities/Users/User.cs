@@ -3,6 +3,8 @@ using Workers.Domain.Enums;
 using Workers.Domain.Entities.Workers;
 using Workers.Domain.Entities.Companies;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Workers.Domain.Entities.Users;
 
 /// <summary>
@@ -10,15 +12,20 @@ namespace Workers.Domain.Entities.Users;
 /// </summary>
 public class User : BaseEntity
 {
-    /// <summary>
-    /// Primary email address used for login and notifications.
-    /// </summary>
+    [NotMapped]
     public string Email { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Phone number for SMS notifications and verification.
-    /// </summary>
+    [NotMapped]
     public string PhoneNumber { get; set; } = string.Empty;
+
+    [NotMapped]
+    public UserRole Role { get; set; }
+
+    [NotMapped]
+    public bool IsEmailVerified { get; set; }
+
+    [NotMapped]
+    public bool IsPhoneVerified { get; set; }
 
     /// <summary>
     /// User's first name.
@@ -29,21 +36,6 @@ public class User : BaseEntity
     /// User's last name.
     /// </summary>
     public string? LastName { get; set; }
-
-    /// <summary>
-    /// Access role of the user (Client, Worker, or Firma).
-    /// </summary>
-    public UserRole Role { get; set; }
-    
-    /// <summary>
-    /// Whether the email address has been verified via link.
-    /// </summary>
-    public bool IsEmailVerified { get; set; }
-
-    /// <summary>
-    /// Whether the phone number has been verified via OTP.
-    /// </summary>
-    public bool IsPhoneVerified { get; set; }
     
     /// <summary>
     /// URL to the user's avatar image.

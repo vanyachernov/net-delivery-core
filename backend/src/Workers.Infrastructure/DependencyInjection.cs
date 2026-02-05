@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Workers.Application.Common.Interfaces;
 using Workers.Infrastructure.Persistence;
 using Workers.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Identity;
+using Workers.Infrastructure.Identity;
 
 namespace Workers.Infrastructure;
 
@@ -16,7 +18,12 @@ public static class DependencyInjection
             {
                 options.UseSnakeCaseNamingConvention();
             });
+
+        builder.Services.AddIdentityCore<ApplicationIdentityUser>()
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
             
+        builder.Services.AddScoped<IIdentityService, IdentityService>();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
     }

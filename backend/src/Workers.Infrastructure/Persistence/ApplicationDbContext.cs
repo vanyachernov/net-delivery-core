@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Workers.Application.Common.Interfaces;
 using Workers.Domain.Entities.Categories;
@@ -8,17 +9,18 @@ using Workers.Domain.Entities.Payments;
 using Workers.Domain.Entities.Reviews;
 using Workers.Domain.Entities.Users;
 using Workers.Domain.Entities.Workers;
+using Workers.Infrastructure.Identity;
 
 namespace Workers.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext,IUnitOfWork
+public class ApplicationDbContext : IdentityDbContext<ApplicationIdentityUser>, IUnitOfWork
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
 
-    public DbSet<User> Users => Set<User>();
+    public new DbSet<User> Users => Set<User>();
     public DbSet<WorkerProfile> WorkerProfiles => Set<WorkerProfile>();
     public DbSet<WorkerPortfolioItem> WorkerPortfolioItems => Set<WorkerPortfolioItem>();
     public DbSet<WorkerMedia> WorkerMedia => Set<WorkerMedia>();

@@ -6,6 +6,7 @@ using Domain.Enums;
 
 public record CreateUserCommand(
     string Email,
+    string Password,
     string PhoneNumber,
     string? FirstName,
     string? LastName,

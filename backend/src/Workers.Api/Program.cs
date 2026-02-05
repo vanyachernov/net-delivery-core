@@ -26,12 +26,13 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
 
 builder.AddServiceDefaults();
 {
-    builder.AddInfrastructure();
+    builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddOpenApi();
     builder.Services.AddApplication();
+    builder.AddInfrastructure();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
-    builder.Services.AddControllers();
 }
 
 var app = builder.Build();

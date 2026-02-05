@@ -37,7 +37,7 @@ public class UsersController(IMediator mediator) : ApiControllerBase
             : OkResult(userDataDto);
     }
 
-    [HttpGet]
+    [HttpGet("all")]
     public async Task<IActionResult> GetList(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
