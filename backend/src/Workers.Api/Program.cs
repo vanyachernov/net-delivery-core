@@ -12,6 +12,8 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
         .ReadFrom.Configuration(context.Configuration)
         .Enrich.FromLogContext()
         .WriteTo.Console()
+        .WriteTo.Seq(
+            serverUrl: context.Configuration["Seq:ServerUrl"] ?? "http://localhost:5341")
         .WriteTo.OpenTelemetry(options =>
         {
             options.Endpoint = context.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
@@ -24,10 +26,9 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
 
 builder.AddServiceDefaults();
 {
+    builder.AddInfrastructure();
     builder.Services.AddOpenApi();
-    builder.Services
-        .AddApplication()
-        .AddInfrastructure(builder.Configuration);
+    builder.Services.AddApplication();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
     builder.Services.AddControllers();

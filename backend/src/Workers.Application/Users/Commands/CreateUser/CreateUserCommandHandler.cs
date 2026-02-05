@@ -4,10 +4,12 @@ using MediatR;
 using Common.Interfaces;
 using DTOs;
 using Workers.Domain.Entities.Users;
+using Microsoft.Extensions.Logging;
 
 public class CreateUserCommandHandler(
     IUserRepository userRepository, 
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    ILogger<CreateUserCommandHandler> logger)
     : IRequestHandler<CreateUserCommand, UserDto>
 {
     public async Task<UserDto> Handle(
