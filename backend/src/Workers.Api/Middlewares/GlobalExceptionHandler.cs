@@ -36,18 +36,15 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 g => g.Select(e => e.ErrorMessage).ToArray()
             );
 
-        return ((int)HttpStatusCode.BadRequest, ApiResult.Failure(new
-        {
-            message = "Validation failed",
-            errors
-        }));
+        var apiError = ApiError.Validation("Validation failed", errors);
+
+        return ((int)HttpStatusCode.BadRequest, ApiResult.Failure(apiError));
     }
 
     private static (int StatusCode, object Response) HandleDefaultException(Exception exception)
     {
-        return ((int)HttpStatusCode.InternalServerError, ApiResult.Failure(new
-        {
-            message = "An internal server error occurred."
-        }));
+        var apiError = ApiError.Simple("An internal server error occurred.", "INTERNAL_ERROR");
+        
+        return ((int)HttpStatusCode.InternalServerError, ApiResult.Failure(apiError));
     }
 }
