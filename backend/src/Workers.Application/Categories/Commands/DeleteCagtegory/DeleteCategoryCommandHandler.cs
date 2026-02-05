@@ -1,6 +1,9 @@
 using MediatR;
 using Workers.Application.Categories.Commands.DeleteCategory;
 using Workers.Application.Common.Interfaces;
+using Workers.Domain.Constants;
+using Workers.Domain.Entities.Categories;
+using Workers.Domain.Exceptions;
 
 
 public class DeleteCategoryCommandHandler(
@@ -13,10 +16,10 @@ public class DeleteCategoryCommandHandler(
     {
         var entity = await categoryRepository.GetByIdAsync(request.Id, cancellationToken);
         if (entity is null)
-            throw new Exception($"Category '{request.Id}' not found.");
+            throw new NotFoundException(nameof(Category), request.Id);
 
         if (await categoryRepository.HasChildrenAsync(request.Id, cancellationToken))
-            throw new Exception("id Cannot delete category that has subcategories.");
+            throw new ConflictException("Cannot delete category that has subcategories.", ErrorCodes.Category.HasChildren);
 
         categoryRepository.SoftDelete(entity);
         await uow.SaveChangesAsync(cancellationToken);

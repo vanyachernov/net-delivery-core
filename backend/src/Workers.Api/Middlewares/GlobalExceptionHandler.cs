@@ -2,6 +2,8 @@ using System.Net;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Workers.Api.Models;
+using Workers.Domain.Constants;
+using Workers.Domain.Exceptions;
 
 namespace Workers.Api.Middlewares;
 
@@ -19,6 +21,11 @@ public class GlobalExceptionHandler(
         var (statusCode, response) = exception switch
         {
             ValidationException validationException => HandleValidationException(validationException),
+            NotFoundException notFoundException => HandleNotFoundException(notFoundException),
+            BadRequestException badRequestException => HandleBadRequestException(badRequestException),
+            ConflictException conflictException => HandleConflictException(conflictException),
+            UnauthorizedException unauthorizedException => HandleUnauthorizedException(unauthorizedException),
+            ForbiddenException forbiddenException => HandleForbiddenException(forbiddenException),
             _ => HandleDefaultException(exception, environment.IsDevelopment())
         };
 
@@ -41,6 +48,36 @@ public class GlobalExceptionHandler(
         var apiError = ApiError.Validation("Validation failed", errors);
 
         return ((int)HttpStatusCode.BadRequest, ApiResult.Failure(apiError));
+    }
+
+    private static (int StatusCode, object Response) HandleNotFoundException(NotFoundException exception)
+    {
+        var apiError = ApiError.Simple(exception.Message, exception.Code);
+        return ((int)HttpStatusCode.NotFound, ApiResult.Failure(apiError));
+    }
+
+    private static (int StatusCode, object Response) HandleBadRequestException(BadRequestException exception)
+    {
+        var apiError = ApiError.Simple(exception.Message, exception.Code);
+        return ((int)HttpStatusCode.BadRequest, ApiResult.Failure(apiError));
+    }
+
+    private static (int StatusCode, object Response) HandleConflictException(ConflictException exception)
+    {
+        var apiError = ApiError.Simple(exception.Message, exception.Code);
+        return ((int)HttpStatusCode.Conflict, ApiResult.Failure(apiError));
+    }
+
+    private static (int StatusCode, object Response) HandleUnauthorizedException(UnauthorizedException exception)
+    {
+        var apiError = ApiError.Simple(exception.Message, exception.Code);
+        return ((int)HttpStatusCode.Unauthorized, ApiResult.Failure(apiError));
+    }
+
+    private static (int StatusCode, object Response) HandleForbiddenException(ForbiddenException exception)
+    {
+        var apiError = ApiError.Simple(exception.Message, exception.Code);
+        return ((int)HttpStatusCode.Forbidden, ApiResult.Failure(apiError));
     }
 
     private static (int StatusCode, object Response) HandleDefaultException(Exception exception, bool isDevelopment)
