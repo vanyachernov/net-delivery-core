@@ -9,9 +9,6 @@ using Workers.Application.Categories.Queries.GetCategoryById;
 
     namespace Workers.Api.Controllers;
 
-    [ApiController]
-    [AllowAnonymous] // temp
-    [Route("api/categories")]
     public class CategoriesController(IMediator mediator) : ApiControllerBase
     {
         [HttpGet]
@@ -46,10 +43,7 @@ using Workers.Application.Categories.Queries.GetCategoryById;
                 cancellationToken);
             
             return data is null
-                ? NotFoundResult(new
-                {
-                    message = "Category not found"
-                })
+                ? NotFoundResult("Category not found")
                 : OkResult(data);
         }
 
@@ -71,11 +65,7 @@ using Workers.Application.Categories.Queries.GetCategoryById;
             [FromBody] UpdateCategoryCommand categoryCommand, 
             CancellationToken cancellationToken = default)
         {
-            if (categoryId != categoryCommand.Id) return BadRequestResult(
-                new
-                {
-                    message = "Route id != body id"
-                });
+            if (categoryId != categoryCommand.Id) return BadRequestResult("Route id != body id");
             
             var updated = await mediator.Send(
                 categoryCommand, 
