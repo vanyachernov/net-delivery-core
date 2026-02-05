@@ -1,5 +1,5 @@
 using MediatR;
 
-namespace Workers.Application.Categories.Commands.DeleteCagtegory;
+namespace Workers.Application.Categories.Commands.DeleteCategory;
 
 public record DeleteCategoryCommand(Guid Id) : IRequest;

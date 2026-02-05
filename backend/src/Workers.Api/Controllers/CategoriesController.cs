@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Workers.Application.Categories.Commands.CreateCategory;
-using Workers.Application.Categories.Commands.DeleteCagtegory;
+using Workers.Application.Categories.Commands.DeleteCategory;
 using Workers.Application.Categories.Commands.UpdateCategory;
 using Workers.Application.Categories.Queries.GetCategories;
 using Workers.Application.Categories.Queries.GetCategoryById;

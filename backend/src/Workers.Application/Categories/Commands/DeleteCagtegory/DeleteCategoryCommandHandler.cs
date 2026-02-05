@@ -1,5 +1,5 @@
 using MediatR;
-using Workers.Application.Categories.Commands.DeleteCagtegory;
+using Workers.Application.Categories.Commands.DeleteCategory;
 using Workers.Application.Common.Interfaces;
 
 
