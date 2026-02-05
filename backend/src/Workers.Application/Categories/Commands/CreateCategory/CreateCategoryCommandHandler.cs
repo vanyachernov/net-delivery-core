@@ -1,7 +1,9 @@
 using MediatR;
 using Workers.Application.Categories.DTOs;
 using Workers.Application.Common.Interfaces;
+using Workers.Domain.Constants;
 using Workers.Domain.Entities.Categories;
+using Workers.Domain.Exceptions;
 
 namespace Workers.Application.Categories.Commands.CreateCategory;
 
@@ -17,17 +19,16 @@ public class CreateCategoryCommandHandler(
     {
         if (await repo.SlugExistsAsync(request.Slug, excludeId: null, cancellationToken))
         {
-            throw new AppValidationException("slug", "Slug already exists.");
+            throw new ConflictException("Slug already exists.", ErrorCodes.Category.DuplicateSlug);
         }
 
         if (request.ParentId is not null && !await repo.ExistsAsync(request.ParentId.Value, cancellationToken))
         {
-            throw new AppValidationException("parentId", "Parent category not found.");
+            throw new BadRequestException("Parent category not found.");
         }
 
         var category = new Category
         {
-            Id = Guid.NewGuid(),
             Name = request.Name.Trim(),
             Slug = request.Slug.Trim().ToLowerInvariant(),
             Description = request.Description?.Trim(),
@@ -48,19 +49,8 @@ public class CreateCategoryCommandHandler(
             category.Description,
             category.IconUrl,
             category.ParentId,
+            category.IsDeleted,
             SubCategories: null
         );
-    }
-}
-
-public class AppValidationException : Exception
-{
-    public string Field { get; }
-    public string Error { get; }
-
-    public AppValidationException(string field, string error) : base($"{field}: {error}")
-    {
-        Field = field;
-        Error = error;
     }
 }

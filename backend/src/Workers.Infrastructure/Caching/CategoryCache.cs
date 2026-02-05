@@ -19,23 +19,23 @@ public class CategoryCache(IConnectionMultiplexer redis) : ICategoryCache
         return (long)v!;
     }
 
-    private async Task<string> BuildKey(Guid? parentId, CategoryLoadMode mode)
+    private async Task<string> BuildKey(Guid? parentId, CategoryLoadMode mode, bool overpassIsDeleteFilter)
     {
         var v = await GetVersionAsync();
         var parent = parentId?.ToString() ?? "null";
-        return $"categories:v{v}:mode:{mode}:parent:{parent}";
+        return $"categories:v{v}:mode:{mode}:parent:{parent}:deleted:{overpassIsDeleteFilter}";
     }
 
-    public async Task<List<CategoryDto>?> GetAsync(Guid? parentId, CategoryLoadMode mode, CancellationToken ct)
+    public async Task<List<CategoryDto>?> GetAsync(Guid? parentId, CategoryLoadMode mode, bool overpassIsDeleteFilter, CancellationToken ct)
     {
-        var key = await BuildKey(parentId, mode);
+        var key = await BuildKey(parentId, mode, overpassIsDeleteFilter);
         var json = await _db.StringGetAsync(key);
         return json.IsNullOrEmpty ? null : JsonSerializer.Deserialize<List<CategoryDto>>(json.ToString());
     }
 
-    public async Task SetAsync(Guid? parentId, CategoryLoadMode mode, List<CategoryDto> data, CancellationToken ct)
+    public async Task SetAsync(Guid? parentId, CategoryLoadMode mode, bool overpassIsDeleteFilter, List<CategoryDto> data, CancellationToken ct)
     {
-        var key = await BuildKey(parentId, mode);
+        var key = await BuildKey(parentId, mode, overpassIsDeleteFilter);
         var json = System.Text.Json.JsonSerializer.Serialize(data);
         await _db.StringSetAsync(key, json, Ttl);
     }

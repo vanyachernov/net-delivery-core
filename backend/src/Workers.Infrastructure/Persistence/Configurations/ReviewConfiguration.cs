@@ -32,5 +32,5 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
             .HasForeignKey(m => m.ReviewId);
 
         builder.HasQueryFilter(r => !r.IsDeleted);
-    }
+    }   
 }

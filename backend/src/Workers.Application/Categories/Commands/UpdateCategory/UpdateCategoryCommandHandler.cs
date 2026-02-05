@@ -1,45 +1,75 @@
 
 
 
-using MediatR;
-using Workers.Application.Categories.DTOs;
-using Workers.Application.Common.Interfaces;
-using Workers.Domain.Entities.Categories;
-using Workers.Domain.Exceptions;
+    using MediatR;
+    using Workers.Application.Categories.DTOs;
+    using Workers.Application.Common.Interfaces;
+    using Workers.Domain.Constants;
+    using Workers.Domain.Entities.Categories;
+    using Workers.Domain.Exceptions;
 
-namespace Workers.Application.Categories.Commands.UpdateCategory;
+    namespace Workers.Application.Categories.Commands.UpdateCategory;
 
-public class UpdateCategoryCommandHandler(
-    ICategoryRepository repo,
-    IUnitOfWork uow,
-    ICategoryCache cache
-) : IRequestHandler<UpdateCategoryCommand, CategoryDto>
-{
-    public async Task<CategoryDto> Handle(UpdateCategoryCommand request, CancellationToken ct)
+    public class UpdateCategoryCommandHandler(
+        ICategoryRepository categoryRepository,
+        IUnitOfWork unitOfWork,
+        ICategoryCache categoryCache
+    ) : IRequestHandler<UpdateCategoryCommand, CategoryDto>
     {
-        var entity = await repo.GetByIdAsync(request.Id, ct) 
+    public async Task<CategoryDto> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
+    {
+        var entity = await categoryRepository.GetByIdAsync(request.Id, false, cancellationToken) 
             ?? throw new NotFoundException(nameof(Category), request.Id);
+
+        if (request.ParentId == request.Id)
+            throw new BadRequestException("Category cannot be its own parent.");
+
+        if (request.ParentId is not null && !await categoryRepository.ExistsAsync(request.ParentId.Value, cancellationToken))
+            throw new BadRequestException("Parent category not found.");
+
+        if (await categoryRepository.SlugExistsAsync(request.Slug, request.Id, cancellationToken))
+            throw new ConflictException("Slug already exists.", ErrorCodes.Category.DuplicateSlug);
+
+        await EnsureNoCircularParentAsync(entity.Id, request.ParentId, cancellationToken);
 
         entity.Name = request.Name.Trim();
         entity.Slug = request.Slug.Trim().ToLowerInvariant();
         entity.Description = request.Description?.Trim();
-        entity.IconUrl = request.IconUrl?.Trim();
-        entity.ParentId = request.ParentId;
-        entity.UpdatedAt = DateTime.UtcNow;
+            entity.IconUrl = request.IconUrl?.Trim();
+            entity.ParentId = request.ParentId;
+            entity.UpdatedAt = DateTime.UtcNow;
 
-        repo.Update(entity);
-        await uow.SaveChangesAsync(ct);
+            categoryRepository.Update(entity);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await cache.InvalidateAsync(ct);
+            await categoryCache.InvalidateAsync(cancellationToken);
 
-        return new CategoryDto(
-            entity.Id,
-            entity.Name,
-            entity.Slug,
-            entity.Description,
-            entity.IconUrl,
-            entity.ParentId,
-            SubCategories: null
-        );
+            return new CategoryDto(
+                entity.Id,
+                entity.Name,
+                entity.Slug,
+                entity.Description,
+                entity.IconUrl,
+                entity.ParentId,
+                entity.IsDeleted,
+                SubCategories: null
+            );
+        }
+
+        private async Task EnsureNoCircularParentAsync(Guid categoryId, Guid? newParentId, CancellationToken cancellationToken)
+        {
+            var currentId = newParentId;
+            var visited = new HashSet<Guid>();
+
+            while (currentId is not null)
+            {
+                var parentId = currentId.Value;
+                if (!visited.Add(parentId)) break;
+                if (parentId == categoryId)
+                    throw new BadRequestException("Parent category cannot be a descendant of the category.");
+
+                var parent = await categoryRepository.GetByIdAsync(parentId, false, cancellationToken);
+                currentId = parent?.ParentId;
+            }
+        }
     }
-}

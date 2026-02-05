@@ -7,5 +7,6 @@ public record CategoryDto(
     string? Description,
     string? IconUrl,
     Guid? ParentId,
+    bool IsDeleted,
     List<CategoryDto>? SubCategories
 );

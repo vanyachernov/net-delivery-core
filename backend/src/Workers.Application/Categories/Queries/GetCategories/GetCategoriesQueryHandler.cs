@@ -15,34 +15,38 @@ public class GetCategoriesQueryHandler(
     public async Task<List<CategoryDto>> Handle(GetCategoriesQuery request, CancellationToken ct)
     {
         List<CategoryDto>? cached = null;
-        
+
         try
         {
-            cached = await cache.GetAsync(request.ParentId, request.Mode, ct);
+            cached = await cache.GetAsync(request.ParentId, request.Mode, request.OverpassIsDeleteFilter, ct);
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Category cache get failed");
         }
-        
+
         if (cached is not null) return cached;
 
         List<CategoryDto> result;
 
         if (request.Mode == CategoryLoadMode.Direct)
         {
-            var entities = await repo.GetDirectChildrenAsync(request.ParentId, ct);
+            var entities = await repo.GetDirectChildrenAsync(
+                request.ParentId,
+                request.OverpassIsDeleteFilter,
+                ct);
+
             result = entities.Select(ToDtoNoChildren).ToList();
         }
         else
         {
-            var all = await repo.GetAllAsync(ct);
+            var all = await repo.GetAllAsync(
+                request.OverpassIsDeleteFilter,
+                ct);
 
-            
             var lookup = all.GroupBy(x => x.ParentId)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            
             var rootParentId = request.ParentId;
 
             var roots = lookup.TryGetValue(rootParentId, out var rootList)
@@ -54,7 +58,7 @@ public class GetCategoriesQueryHandler(
 
         try
         {
-            await cache.SetAsync(request.ParentId, request.Mode, result, ct);
+            await cache.SetAsync(request.ParentId, request.Mode, request.OverpassIsDeleteFilter, result, ct);
         }
         catch (Exception ex)
         {
@@ -65,13 +69,13 @@ public class GetCategoriesQueryHandler(
     }
 
     private static CategoryDto ToDtoNoChildren(Category c) =>
-        new(c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId, null);
+        new(c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId, c.IsDeleted, null);
 
     private static CategoryDto BuildTree(Category c, Dictionary<Guid?, List<Category>> lookup)
     {
         var children = lookup.TryGetValue(c.Id, out var list) ? list : new List<Category>();
         return new CategoryDto(
-            c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId,
+            c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId, c.IsDeleted,
             children.Select(ch => BuildTree(ch, lookup)).ToList()
         );
     }

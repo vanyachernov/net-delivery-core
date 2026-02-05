@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Workers.Application.Categories.Commands.CreateCategory;
 using Workers.Application.Categories.Commands.DeleteCategory;
+using Workers.Application.Categories.Commands.RestoreCategory;
 using Workers.Application.Categories.Commands.UpdateCategory;
 using Workers.Application.Categories.Queries.GetCategories;
 using Workers.Application.Categories.Queries.GetCategoryById;
@@ -15,6 +16,7 @@ using Workers.Application.Categories.Queries.GetCategoryById;
         public async Task<IActionResult> Get(
             [FromQuery] Guid? parentId,
             [FromQuery] string mode = "direct",
+            [FromQuery] bool overpassIsDeleteFilter = false,
             CancellationToken cancellationToken = default)
         {
             var parsedMode = mode.Equals("all", StringComparison.OrdinalIgnoreCase)
@@ -22,15 +24,15 @@ using Workers.Application.Categories.Queries.GetCategoryById;
                 : CategoryLoadMode.Direct;
 
             var data = await mediator.Send(
-                new GetCategoriesQuery(parentId, parsedMode), 
+                new GetCategoriesQuery(parentId, parsedMode, overpassIsDeleteFilter), 
                 cancellationToken);
             
             return OkResult(data);
         }
 
-        [HttpGet("{categoryId:guid}")]
-        public async Task<IActionResult> GetById(
-            Guid categoryId,
+        [HttpGet("admin")]
+        public async Task<IActionResult> GetForAdmin(
+            [FromQuery] Guid? parentId,
             [FromQuery] string mode = "direct",
             CancellationToken cancellationToken = default)
         {
@@ -39,7 +41,25 @@ using Workers.Application.Categories.Queries.GetCategoryById;
                 : CategoryLoadMode.Direct;
 
             var data = await mediator.Send(
-                new GetCategoryByIdQuery(categoryId, parsedMode), 
+                new GetCategoriesQuery(parentId, parsedMode, OverpassIsDeleteFilter: true),
+                cancellationToken);
+
+            return OkResult(data);
+        }
+
+        [HttpGet("{categoryId:guid}")]
+        public async Task<IActionResult> GetById(
+            Guid categoryId,
+            [FromQuery] string mode = "direct",
+            [FromQuery] bool overpassIsDeleteFilter = false,
+            CancellationToken cancellationToken = default)
+        {
+            var parsedMode = mode.Equals("all", StringComparison.OrdinalIgnoreCase)
+                ? CategoryLoadMode.All
+                : CategoryLoadMode.Direct;
+
+            var data = await mediator.Send(
+                new GetCategoryByIdQuery(categoryId, parsedMode, overpassIsDeleteFilter), 
                 cancellationToken);
             
             return data is null
@@ -57,6 +77,22 @@ using Workers.Application.Categories.Queries.GetCategoryById;
                 cancellationToken);
             
             return OkResult(created);
+        }
+
+        [HttpPost("{categoryId:guid}/restore")] // Admin
+        public async Task<IActionResult> Restore(
+            [FromRoute] Guid categoryId,
+            CancellationToken cancellationToken = default)
+        {
+            await mediator.Send(
+                new RestoreCategoryCommand(categoryId),
+                cancellationToken);
+
+            return OkResult(
+                new
+                {
+                    message = "Restored"
+                });
         }
 
         [HttpPut("{categoryId:guid}")] // Admin

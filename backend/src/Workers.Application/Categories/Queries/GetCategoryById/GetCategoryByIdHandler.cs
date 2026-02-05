@@ -13,11 +13,17 @@ public class GetCategoryByIdHandler(ICategoryRepository repo)
     {
         if (request.Mode == CategoryLoadMode.Direct)
         {
-            var entity = await repo.GetByIdAsync(request.Id, ct);
+            var entity = await repo.GetByIdAsync(
+                request.Id,
+                request.OverpassIsDeleteFilter,
+                ct);
+
             return entity is null ? null : ToDtoNoChildren(entity);
         }
 
-        var all = await repo.GetAllAsync(ct);
+        var all = await repo.GetAllAsync(
+            request.OverpassIsDeleteFilter,
+            ct);
         var root = all.FirstOrDefault(x => x.Id == request.Id);
         if (root is null) return null;
 
@@ -28,13 +34,13 @@ public class GetCategoryByIdHandler(ICategoryRepository repo)
     }
 
     private static CategoryDto ToDtoNoChildren(Category c) =>
-        new(c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId, null);
+        new(c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId, c.IsDeleted, null);
 
     private static CategoryDto BuildTree(Category c, Dictionary<Guid?, List<Category>> lookup)
     {
         var children = lookup.TryGetValue(c.Id, out var list) ? list : new List<Category>();
         return new CategoryDto(
-            c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId,
+            c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId, c.IsDeleted,
             children.Select(ch => BuildTree(ch, lookup)).ToList()
         );
     }
