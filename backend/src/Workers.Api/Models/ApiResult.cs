@@ -18,18 +18,18 @@ public record ApiResult<T>
     /// <summary>
     /// Detailed information about errors, if any.
     /// </summary>
-    public object? Errors { get; init; }
+    public ApiError? Error { get; init; }
 
     /// <summary>
     /// Timestamp when the response was created (UTC).
     /// </summary>
     public DateTime CreatedAt { get; init; }
 
-    public ApiResult(bool status, T? data, object? errors)
+    public ApiResult(bool status, T? data, ApiError? error)
     {
         Status = status;
         Data = data;
-        Errors = errors;
+        Error = error;
         CreatedAt = DateTime.UtcNow;
     }
 
@@ -42,8 +42,14 @@ public record ApiResult<T>
     /// <summary>
     /// Creates a failed result with error details.
     /// </summary>
-    public static ApiResult<T> Failure(object? errors) 
-        => new(false, default, errors);
+    public static ApiResult<T> Failure(ApiError error) 
+        => new(false, default, error);
+    
+    /// <summary>
+    /// Creates a failed result with a simple error message.
+    /// </summary>
+    public static ApiResult<T> Failure(string message, string? code = null) 
+        => new(false, default, ApiError.Simple(message, code));
 }
 
 /// <summary>
@@ -66,6 +72,12 @@ public static class ApiResult
     /// <summary>
     /// Creates a failed result with error details.
     /// </summary>
-    public static ApiResult<object> Failure(object? errors) 
-        => new(false, null, errors);
+    public static ApiResult<object> Failure(ApiError error) 
+        => new(false, null, error);
+    
+    /// <summary>
+    /// Creates a failed result with a simple error message.
+    /// </summary>
+    public static ApiResult<object> Failure(string message, string? code = null) 
+        => new(false, null, ApiError.Simple(message, code));
 }

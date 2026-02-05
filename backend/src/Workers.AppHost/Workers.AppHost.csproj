@@ -16,4 +16,8 @@
     <PackageReference Include="Aspire.Hosting.Redis" Version="13.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Seq" Version="13.1.0" />
+  </ItemGroup>
+
 </Project>
