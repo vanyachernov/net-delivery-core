@@ -1,7 +1,7 @@
 using System.Text.Json;
 using StackExchange.Redis;
 using Workers.Application.Categories.DTOs;
-using Workers.Application.Categories.Queries;
+using Workers.Application.Categories.Queries.GetCategories;
 using Workers.Application.Common.Interfaces;
 
 

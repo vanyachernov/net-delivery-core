@@ -1,19 +1,31 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Workers.Application.Categories.DTOs;
 using Workers.Application.Common.Interfaces;
 using Workers.Domain.Entities.Categories;
 
-namespace Workers.Application.Categories.Queries;
+namespace Workers.Application.Categories.Queries.GetCategories;
 
 public class GetCategoriesQueryHandler(
     ICategoryRepository repo,
-    ICategoryCache cache
+    ICategoryCache cache,
+    ILogger<GetCategoriesQueryHandler> logger
 ) : IRequestHandler<GetCategoriesQuery, List<CategoryDto>>
 {
     public async Task<List<CategoryDto>> Handle(GetCategoriesQuery request, CancellationToken ct)
     {
-        var cached = await cache.GetAsync(request.ParentId, request.Mode, ct);
-        if (cached is not null) return cached;
+        // List<CategoryDto>? cached = null;
+        //
+        // try
+        // {
+        //     cached = await cache.GetAsync(request.ParentId, request.Mode, ct);
+        // }
+        // catch (Exception ex)
+        // {
+        //     logger.LogWarning(ex, "Category cache get failed");
+        // }
+        //
+        // if (cached is not null) return cached;
 
         List<CategoryDto> result;
 
@@ -40,7 +52,15 @@ public class GetCategoriesQueryHandler(
             result = roots.Select(x => BuildTree(x, lookup)).ToList();
         }
 
-        await cache.SetAsync(request.ParentId, request.Mode, result, ct);
+        try
+        {
+            await cache.SetAsync(request.ParentId, request.Mode, result, ct);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Category cache set failed");
+        }
+
         return result;
     }
 

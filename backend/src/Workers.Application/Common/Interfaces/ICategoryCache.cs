@@ -1,5 +1,5 @@
 using Workers.Application.Categories.DTOs;
-using Workers.Application.Categories.Queries;
+using Workers.Application.Categories.Queries.GetCategories;
 
 namespace Workers.Application.Common.Interfaces;
 

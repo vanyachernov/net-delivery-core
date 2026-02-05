@@ -1,25 +1,25 @@
 using Microsoft.EntityFrameworkCore;
+using Workers.Application.Categories.DTOs;
 using Workers.Application.Common.Interfaces;
 using Workers.Domain.Entities.Categories;
 using Workers.Infrastructure.Persistence;
 
-namespace Workers.Infrastructure.Persistence.Repositories;
+namespace Workers.Infrastructure.Repositories;
 
 public class CategoryRepository(ApplicationDbContext db) : ICategoryRepository
 {
-    public Task<List<Category>> GetDirectChildrenAsync(Guid? parentId, CancellationToken ct)
+    public async Task<List<Category>> GetDirectChildrenAsync(Guid? parentId, CancellationToken ct)
     {
-        return db.Set<Category>()
+        return await db.Set<Category>()
             .AsNoTracking()
             .Where(c => c.ParentId == parentId)
             .OrderBy(c => c.Name)
             .ToListAsync(ct);
     }
 
-    public Task<List<Category>> GetAllAsync(CancellationToken ct)
+    public async Task<List<Category>> GetAllAsync(CancellationToken ct)
     {
-        
-        return db.Set<Category>()
+        return await db.Set<Category>()
             .AsNoTracking()
             .OrderBy(c => c.Name)
             .ToListAsync(ct);

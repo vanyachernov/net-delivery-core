@@ -1,12 +1,10 @@
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Workers.Application.Categories.DTOs;
+using Workers.Application.Categories.Queries.GetCategories;
 using Workers.Application.Common.Interfaces;
-using Workers.Application.Users.DTOs;
-using Workers.Application.Users.Queries.GetUserById;
 using Workers.Domain.Entities.Categories;
 
-namespace Workers.Application.Categories.Queries;
+namespace Workers.Application.Categories.Queries.GetCategoryById;
 
 public class GetCategoryByIdHandler(ICategoryRepository repo)
     : IRequestHandler<GetCategoryByIdQuery, CategoryDto?>
@@ -41,3 +39,4 @@ public class GetCategoryByIdHandler(ICategoryRepository repo)
         );
     }
 }
+ 

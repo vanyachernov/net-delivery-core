@@ -1,3 +1,4 @@
+using Workers.Application.Categories.DTOs;
 using Workers.Domain.Entities.Categories;
 
 namespace Workers.Application.Common.Interfaces;

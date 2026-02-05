@@ -7,6 +7,7 @@ using Workers.Application.Common.Interfaces;
 using Workers.Infrastructure.Caching;
 using Workers.Infrastructure.Persistence;
 using Workers.Infrastructure.Persistence.Repositories;
+using Workers.Infrastructure.Repositories;
 
 namespace Workers.Infrastructure;
 
