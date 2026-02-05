@@ -42,7 +42,7 @@ public class CategoryCache(IConnectionMultiplexer redis) : ICategoryCache
 
     public async Task InvalidateAsync(CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
         await _db.StringIncrementAsync(VersionKey);
     }
 }
-
