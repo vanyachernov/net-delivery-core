@@ -1,42 +1,35 @@
 namespace Workers.Application.Users.Commands.CreateUser;
 
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Common.Interfaces;
 using DTOs;
 using Workers.Domain.Entities.Users;
 
-
 public class CreateUserCommandHandler(
-    IUserRepository users, 
-    IUnitOfWork uow,
-    ILogger<CreateUserCommandHandler> logger)
+    IUserRepository userRepository, 
+    IUnitOfWork unitOfWork)
     : IRequestHandler<CreateUserCommand, UserDto>
 {
     public async Task<UserDto> Handle(
         CreateUserCommand request, 
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Starting the process of creating a new user with email: {Email}", request.Email);
         
         var email = request.Email.Trim().ToLowerInvariant();
         var phone = request.PhoneNumber.Trim();
 
-        logger.LogInformation("Checking if email or phone already exists...");
-
-        if (await users.EmailExistsAsync(email, cancellationToken))
+        if (await userRepository.EmailExistsAsync(email, cancellationToken))
         {
-            logger.LogWarning("Failed to create user: Email {Email} already exists", email);
             throw new InvalidOperationException("User with this email already exists.");
         }
 
-        if (await users.PhoneExistsAsync(phone, cancellationToken))
+        if (await userRepository.PhoneExistsAsync(phone, cancellationToken))
         {
-            logger.LogWarning("Failed to create user: Phone {Phone} already exists", phone);
             throw new InvalidOperationException("User with this phone already exists.");
         }
 
-        var user = new User
+        var newUser = new User
         {
             Email = email,
             PhoneNumber = phone,
@@ -48,25 +41,19 @@ public class CreateUserCommandHandler(
             AvatarUrl = null
         };
 
-        logger.LogInformation("Creating user entity and adding to repository...");
-
-        await users.AddAsync(user, cancellationToken);
-        
-        logger.LogInformation("Saving changes to the database...");
-        await uow.SaveChangesAsync(cancellationToken);
-
-        logger.LogInformation("User created successfully with ID: {UserId}", user.Id);
+        await userRepository.AddAsync(newUser, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new UserDto(
-            user.Id,
-            user.Email,
-            user.PhoneNumber,
-            user.FirstName,
-            user.LastName,
-            user.Role,
-            user.IsEmailVerified,
-            user.IsPhoneVerified,
-            user.AvatarUrl
+            newUser.Id,
+            newUser.Email,
+            newUser.PhoneNumber,
+            newUser.FirstName,
+            newUser.LastName,
+            newUser.Role,
+            newUser.IsEmailVerified,
+            newUser.IsPhoneVerified,
+            newUser.AvatarUrl
         );
     }
 }

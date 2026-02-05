@@ -4,7 +4,6 @@ using Workers.Infrastructure;
 using Workers.Api.Middlewares;
 using Workers.Application;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, loggerConfiguration) =>
@@ -26,8 +25,9 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
 builder.AddServiceDefaults();
 {
     builder.Services.AddOpenApi();
-    builder.Services.AddApplication();
-    builder.AddInfrastructure();
+    builder.Services
+        .AddApplication()
+        .AddInfrastructure(builder.Configuration);
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
     builder.Services.AddControllers();
