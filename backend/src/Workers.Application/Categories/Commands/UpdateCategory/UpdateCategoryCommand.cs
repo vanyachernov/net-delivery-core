@@ -1,7 +1,7 @@
 using MediatR;
 using Workers.Application.Categories.DTOs;
 
-namespace Workers.Application.Categories.Commands;
+namespace Workers.Application.Categories.Commands.UpdateCategory;
 
 public record UpdateCategoryCommand(
     Guid Id,

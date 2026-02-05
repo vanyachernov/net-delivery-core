@@ -2,6 +2,8 @@
     using Microsoft.AspNetCore.Mvc;
     using Workers.Application.Categories.Commands;
     using Workers.Application.Categories.Commands.CreateCategory;
+    using Workers.Application.Categories.Commands.DeleteCagtegory;
+    using Workers.Application.Categories.Commands.UpdateCategory;
     using Workers.Application.Categories.Queries;
     using Workers.Domain.Entities.Categories;
 

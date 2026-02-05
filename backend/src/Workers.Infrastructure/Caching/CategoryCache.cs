@@ -1,3 +1,4 @@
+using System.Text.Json;
 using StackExchange.Redis;
 using Workers.Application.Categories.DTOs;
 using Workers.Application.Categories.Queries;
@@ -30,8 +31,7 @@ public class CategoryCache(IConnectionMultiplexer redis) : ICategoryCache
     {
         var key = await BuildKey(parentId, mode);
         var json = await _db.StringGetAsync(key);
-        if (json.IsNullOrEmpty) return null;
-        return System.Text.Json.JsonSerializer.Deserialize<List<CategoryDto>>(json.ToString());
+        return json.IsNullOrEmpty ? null : JsonSerializer.Deserialize<List<CategoryDto>>(json.ToString());
     }
 
     public async Task SetAsync(Guid? parentId, CategoryLoadMode mode, List<CategoryDto> data, CancellationToken ct)
