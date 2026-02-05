@@ -5,7 +5,9 @@ using Workers.Api.Models;
 
 namespace Workers.Api.Middlewares;
 
-public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+public class GlobalExceptionHandler(
+    ILogger<GlobalExceptionHandler> logger, 
+    IHostEnvironment environment) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
@@ -17,7 +19,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         var (statusCode, response) = exception switch
         {
             ValidationException validationException => HandleValidationException(validationException),
-            _ => HandleDefaultException(exception)
+            _ => HandleDefaultException(exception, environment.IsDevelopment())
         };
 
         httpContext.Response.StatusCode = statusCode;
@@ -41,10 +43,25 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         return ((int)HttpStatusCode.BadRequest, ApiResult.Failure(apiError));
     }
 
-    private static (int StatusCode, object Response) HandleDefaultException(Exception exception)
+    private static (int StatusCode, object Response) HandleDefaultException(Exception exception, bool isDevelopment)
     {
-        var apiError = ApiError.Simple("An internal server error occurred.", "INTERNAL_ERROR");
-        
-        return ((int)HttpStatusCode.InternalServerError, ApiResult.Failure(apiError));
+        if (isDevelopment)
+        {
+            var apiError = new ApiError(
+                message: exception.Message,
+                code: "INTERNAL_ERROR",
+                validationErrors: null,
+                details: new
+                {
+                    type = exception.GetType().Name,
+                    stackTrace = exception.StackTrace,
+                    innerException = exception.InnerException?.Message
+                });
+
+            return ((int)HttpStatusCode.InternalServerError, ApiResult.Failure(apiError));
+        }
+
+        var genericError = ApiError.Simple("An internal server error occurred.", "INTERNAL_ERROR");
+        return ((int)HttpStatusCode.InternalServerError, ApiResult.Failure(genericError));
     }
 }
