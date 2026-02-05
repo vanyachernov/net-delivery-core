@@ -25,10 +25,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
         
         builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-        builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
-            ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
+        builder.AddRedisClient("redis");
         builder.Services.AddSingleton<ICategoryCache, CategoryCache>();
-      
     }
 }
 

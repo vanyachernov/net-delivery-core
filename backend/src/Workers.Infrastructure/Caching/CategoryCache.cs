@@ -4,7 +4,6 @@ using Workers.Application.Categories.DTOs;
 using Workers.Application.Categories.Queries.GetCategories;
 using Workers.Application.Common.Interfaces;
 
-
 namespace Workers.Infrastructure.Caching;
 
 public class CategoryCache(IConnectionMultiplexer redis) : ICategoryCache
