@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Workers.Application.Users.Commands.CreateUser;
 using Workers.Application.Users.Queries.GetUserById;
@@ -7,6 +8,7 @@ using Workers.Application.Users.Queries.GetUsersList;
 namespace Workers.Api.Controllers;
 
 [ApiController]
+[AllowAnonymous]
 [Route("api/users")]
 public class UsersController(IMediator mediator) : ApiControllerBase
 {

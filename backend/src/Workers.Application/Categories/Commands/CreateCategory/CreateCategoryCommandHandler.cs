@@ -11,14 +11,19 @@ public class CreateCategoryCommandHandler(
     ICategoryCache cache
 ) : IRequestHandler<CreateCategoryCommand, CategoryDto>
 {
-    public async Task<CategoryDto> Handle(CreateCategoryCommand request, CancellationToken ct)
+    public async Task<CategoryDto> Handle(
+        CreateCategoryCommand request, 
+        CancellationToken cancellationToken = default)
     {
-      
-        if (await repo.SlugExistsAsync(request.Slug, excludeId: null, ct))
+        if (await repo.SlugExistsAsync(request.Slug, excludeId: null, cancellationToken))
+        {
             throw new AppValidationException("slug", "Slug already exists.");
+        }
 
-        if (request.ParentId is not null && !await repo.ExistsAsync(request.ParentId.Value, ct))
+        if (request.ParentId is not null && !await repo.ExistsAsync(request.ParentId.Value, cancellationToken))
+        {
             throw new AppValidationException("parentId", "Parent category not found.");
+        }
 
         var category = new Category
         {
@@ -31,10 +36,10 @@ public class CreateCategoryCommandHandler(
             CreatedAt = DateTime.UtcNow
         };
 
-        await repo.AddAsync(category, ct);
-        await uow.SaveChangesAsync(ct);
+        await repo.AddAsync(category, cancellationToken);
+        await uow.SaveChangesAsync(cancellationToken);
 
-        await cache.InvalidateAsync(ct);
+        await cache.InvalidateAsync(cancellationToken);
 
         return new CategoryDto(
             category.Id,
@@ -50,8 +55,12 @@ public class CreateCategoryCommandHandler(
 
 public class AppValidationException : Exception
 {
-    public AppValidationException(string slug, string slugAlreadyExists)
+    public string Field { get; }
+    public string Error { get; }
+
+    public AppValidationException(string field, string error) : base($"{field}: {error}")
     {
-        throw new NotImplementedException();
+        Field = field;
+        Error = error;
     }
 }

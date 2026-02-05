@@ -14,18 +14,18 @@ public class GetCategoriesQueryHandler(
 {
     public async Task<List<CategoryDto>> Handle(GetCategoriesQuery request, CancellationToken ct)
     {
-        // List<CategoryDto>? cached = null;
-        //
-        // try
-        // {
-        //     cached = await cache.GetAsync(request.ParentId, request.Mode, ct);
-        // }
-        // catch (Exception ex)
-        // {
-        //     logger.LogWarning(ex, "Category cache get failed");
-        // }
-        //
-        // if (cached is not null) return cached;
+        List<CategoryDto>? cached = null;
+        
+        try
+        {
+            cached = await cache.GetAsync(request.ParentId, request.Mode, ct);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Category cache get failed");
+        }
+        
+        if (cached is not null) return cached;
 
         List<CategoryDto> result;
 
