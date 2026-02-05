@@ -14,6 +14,8 @@ public class CreateUserCommandHandler(
         CreateUserCommand request, 
         CancellationToken cancellationToken = default)
     {
+        logger.LogInformation("Starting the process of creating a new user with email: {Email}", request.Email);
+        
         var email = request.Email.Trim().ToLowerInvariant();
         var phone = request.PhoneNumber.Trim();
 

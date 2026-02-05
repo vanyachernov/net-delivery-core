@@ -35,7 +35,26 @@ public class ApplicationDbContext : DbContext,IUnitOfWork
     public DbSet<ReviewMedia> ReviewMedia => Set<ReviewMedia>();
     public DbSet<Payment> Payments => Set<Payment>();
 
-    public Task<int> SaveChangesAsync(CancellationToken ct) => base.SaveChangesAsync(ct);
+    public override Task<int> SaveChangesAsync(CancellationToken ct = default)
+    {
+        HandleSoftDelete();
+        return base.SaveChangesAsync(ct);
+    }
+
+    private void HandleSoftDelete()
+    {
+        var entries = ChangeTracker
+            .Entries()
+            .Where(e => e.State == EntityState.Deleted && e.Entity is Workers.Domain.Common.BaseEntity);
+
+        foreach (var entry in entries)
+        {
+            var entity = (Workers.Domain.Common.BaseEntity)entry.Entity;
+            entry.State = EntityState.Modified;
+            entity.IsDeleted = true;
+            entity.DeletedAt = DateTime.UtcNow;
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
