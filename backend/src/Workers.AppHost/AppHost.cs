@@ -1,8 +1,12 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var db = builder.AddConnectionString("DefaultConnection");
+// Kafka Message Broker
+var kafka = builder.AddKafka("kafka")
+    .WithKafkaUI();
 
+// Workers API
+// PostgreSQL connection string берётся из user secrets
 builder.AddProject<Projects.Workers_Api>("workers-api")
-    .WithReference(db);
+    .WithReference(kafka);
 
 builder.Build().Run();
