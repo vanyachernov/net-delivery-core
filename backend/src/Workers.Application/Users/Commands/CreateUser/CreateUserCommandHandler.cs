@@ -1,59 +1,57 @@
 namespace Workers.Application.Users.Commands.CreateUser;
 
 using MediatR;
-using Workers.Application.Common.Interfaces;
-using Workers.Application.Users.DTOs;
+using Common.Interfaces;
+using DTOs;
 using Workers.Domain.Entities.Users;
 
-
-public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserDto>
+public class CreateUserCommandHandler(
+    IUserRepository userRepository, 
+    IUnitOfWork unitOfWork)
+    : IRequestHandler<CreateUserCommand, UserDto>
 {
-    private readonly IUserRepository _users;
-    private readonly IUnitOfWork _uow;
-
-    public CreateUserCommandHandler(IUserRepository users, IUnitOfWork uow)
-    {
-        _users = users;
-        _uow = uow;
-    }
-
-    public async Task<UserDto> Handle(CreateUserCommand request, CancellationToken ct)
+    public async Task<UserDto> Handle(
+        CreateUserCommand request, 
+        CancellationToken cancellationToken = default)
     {
         var email = request.Email.Trim().ToLowerInvariant();
         var phone = request.PhoneNumber.Trim();
 
-        if (await _users.EmailExistsAsync(email, ct))
+        if (await userRepository.EmailExistsAsync(email, cancellationToken))
+        {
             throw new InvalidOperationException("User with this email already exists.");
+        }
 
-        if (await _users.PhoneExistsAsync(phone, ct))
+        if (await userRepository.PhoneExistsAsync(phone, cancellationToken))
+        {
             throw new InvalidOperationException("User with this phone already exists.");
+        }
 
-        var user = new User
+        var newUser = new User
         {
             Email = email,
             PhoneNumber = phone,
             FirstName = request.FirstName?.Trim(),
             LastName = request.LastName?.Trim(),
             Role = request.Role,
-
             IsEmailVerified = false,
             IsPhoneVerified = false,
             AvatarUrl = null
         };
 
-        await _users.AddAsync(user, ct);
-        await _uow.SaveChangesAsync(ct);
+        await userRepository.AddAsync(newUser, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new UserDto(
-            user.Id,
-            user.Email,
-            user.PhoneNumber,
-            user.FirstName,
-            user.LastName,
-            user.Role,
-            user.IsEmailVerified,
-            user.IsPhoneVerified,
-            user.AvatarUrl
+            newUser.Id,
+            newUser.Email,
+            newUser.PhoneNumber,
+            newUser.FirstName,
+            newUser.LastName,
+            newUser.Role,
+            newUser.IsEmailVerified,
+            newUser.IsPhoneVerified,
+            newUser.AvatarUrl
         );
     }
 }

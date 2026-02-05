@@ -12,28 +12,42 @@ public class UsersController(IMediator mediator) : ApiControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Create(
-        [FromBody] CreateUserCommand command, 
-        CancellationToken ct)
+        [FromBody] CreateUserCommand userCommand, 
+        CancellationToken cancellationToken = default)
     {
-        var data = await mediator.Send(command, ct);
-        return OkResult(data);
+        var userDataDto = await mediator.Send(
+            userCommand, 
+            cancellationToken);
+        
+        return OkResult(userDataDto);
     }
         
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(
-        Guid id, 
-        CancellationToken ct)
+        Guid userId, 
+        CancellationToken cancellationToken = default)
     {
-        var user = await mediator.Send(new GetUserByIdQuery(id), ct);
-        return user is null ? NotFound() : OkResult(user);
+        var userDataDto = await mediator.Send(
+            new GetUserByIdQuery(userId), 
+            cancellationToken );
+        
+        return userDataDto is null 
+            ? NotFound() 
+            : OkResult(userDataDto);
     }
 
     [HttpGet]
     public async Task<IActionResult> GetList(
-        [FromQuery] int page = 1, 
-        [FromQuery] int pageSize = 20, 
-        CancellationToken ct = default)
-            => OkResult(await mediator.Send(new GetUsersListQuery(page, pageSize), ct));
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var usersDataDto = await mediator.Send(
+            new GetUsersListQuery(page, pageSize), 
+            cancellationToken);
+        
+        return OkResult(usersDataDto);
+    }
 }
     
