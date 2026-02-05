@@ -27,10 +27,7 @@ public class CategoriesController : ApiControllerBase
     {
         if (id == Guid.Empty)
         {
-            return NotFoundResult(new
-            {
-                message = $"Category with ID {id} not found"
-            });
+            return NotFoundResult($"Category with ID {id} not found");
         }
 
         var category = new Category

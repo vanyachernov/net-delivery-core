@@ -1,10 +1,12 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Workers.Api.Models;
 
 namespace Workers.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/[controller]")]
 public abstract class ApiControllerBase : ControllerBase
 {
     protected IActionResult OkResult<T>(T data)
@@ -17,13 +19,23 @@ public abstract class ApiControllerBase : ControllerBase
         return CreatedAtAction(actionName, routeValues, ApiResult.Success(data));
     }
 
-    protected IActionResult BadRequestResult(object? errors)
+    protected IActionResult BadRequestResult(string message, string? code = null)
     {
-        return BadRequest(ApiResult.Failure(errors));
+        return BadRequest(ApiResult.Failure(message, code));
     }
 
-    protected IActionResult NotFoundResult(object? errors = null)
+    protected IActionResult BadRequestResult(ApiError error)
     {
-        return NotFound(ApiResult.Failure(errors ?? new { message = "Resource not found" }));
+        return BadRequest(ApiResult.Failure(error));
+    }
+
+    protected IActionResult NotFoundResult(string? message = null)
+    {
+        return NotFound(ApiResult.Failure(message ?? "Resource not found", "NOT_FOUND"));
+    }
+
+    protected IActionResult NotFoundResult(ApiError error)
+    {
+        return NotFound(ApiResult.Failure(error));
     }
 }

@@ -6,8 +6,6 @@ using Workers.Application.Users.Queries.GetUsersList;
 
 namespace Workers.Api.Controllers;
 
-[ApiController]
-[Route("api/users")]
 public class UsersController(IMediator mediator) : ApiControllerBase
 {
     [HttpPost]
@@ -25,11 +23,11 @@ public class UsersController(IMediator mediator) : ApiControllerBase
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(
-        Guid userId, 
+        Guid id, 
         CancellationToken cancellationToken = default)
     {
         var userDataDto = await mediator.Send(
-            new GetUserByIdQuery(userId), 
+            new GetUserByIdQuery(id), 
             cancellationToken );
         
         return userDataDto is null 
