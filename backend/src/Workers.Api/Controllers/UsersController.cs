@@ -6,8 +6,6 @@ using Workers.Application.Users.Queries.GetUsersList;
 
 namespace Workers.Api.Controllers;
 
-[ApiController]
-[Route("api/users")]
 public class UsersController(IMediator mediator) : ApiControllerBase
 {
     [HttpPost]
