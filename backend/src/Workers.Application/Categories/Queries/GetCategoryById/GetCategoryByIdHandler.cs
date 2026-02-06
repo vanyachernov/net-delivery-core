@@ -1,5 +1,6 @@
 using MediatR;
 using Workers.Application.Categories.DTOs;
+using Workers.Application.Categories.Mappers;
 using Workers.Application.Categories.Queries.GetCategories;
 using Workers.Application.Common.Interfaces;
 using Workers.Domain.Entities.Categories;
@@ -18,7 +19,7 @@ public class GetCategoryByIdHandler(ICategoryRepository repo)
                 request.OverpassIsDeleteFilter,
                 ct);
 
-            return entity is null ? null : ToDtoNoChildren(entity);
+            return entity is null ? null : CategoryMapper.ToDtoNoChildren(entity);
         }
 
         var all = await repo.GetAllAsync(
@@ -27,22 +28,9 @@ public class GetCategoryByIdHandler(ICategoryRepository repo)
         var root = all.FirstOrDefault(x => x.Id == request.Id);
         if (root is null) return null;
 
-        var lookup = all.GroupBy(x => x.ParentId)
-            .ToDictionary(g => g.Key, g => g.ToList());
+        var lookup = CategoryMapper.BuildLookup(all);
 
-        return BuildTree(root, lookup);
-    }
-
-    private static CategoryDto ToDtoNoChildren(Category c) =>
-        new(c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId, c.IsDeleted, null);
-
-    private static CategoryDto BuildTree(Category c, Dictionary<Guid?, List<Category>> lookup)
-    {
-        var children = lookup.TryGetValue(c.Id, out var list) ? list : new List<Category>();
-        return new CategoryDto(
-            c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId, c.IsDeleted,
-            children.Select(ch => BuildTree(ch, lookup)).ToList()
-        );
+        return CategoryMapper.BuildTree(root, lookup);
     }
 }
  

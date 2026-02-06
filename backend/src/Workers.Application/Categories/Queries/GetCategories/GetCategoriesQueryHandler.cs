@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Workers.Application.Categories.DTOs;
+using Workers.Application.Categories.Mappers;
 using Workers.Application.Common.Interfaces;
 using Workers.Domain.Entities.Categories;
 
@@ -36,7 +37,7 @@ public class GetCategoriesQueryHandler(
                 request.OverpassIsDeleteFilter,
                 ct);
 
-            result = entities.Select(ToDtoNoChildren).ToList();
+            result = entities.Select(CategoryMapper.ToDtoNoChildren).ToList();
         }
         else
         {
@@ -44,16 +45,13 @@ public class GetCategoriesQueryHandler(
                 request.OverpassIsDeleteFilter,
                 ct);
 
-            var lookup = all.GroupBy(x => x.ParentId)
-                .ToDictionary(g => g.Key, g => g.ToList());
+            var lookup = CategoryMapper.BuildLookup(all);
 
             var rootParentId = request.ParentId;
 
-            var roots = lookup.TryGetValue(rootParentId, out var rootList)
-                ? rootList
-                : new List<Category>();
+            var roots = lookup.GetValueOrDefault(rootParentId) ?? [];
 
-            result = roots.Select(x => BuildTree(x, lookup)).ToList();
+            result = roots.Select(x => CategoryMapper.BuildTree(x, lookup)).ToList();
         }
 
         try
@@ -68,15 +66,4 @@ public class GetCategoriesQueryHandler(
         return result;
     }
 
-    private static CategoryDto ToDtoNoChildren(Category c) =>
-        new(c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId, c.IsDeleted, null);
-
-    private static CategoryDto BuildTree(Category c, Dictionary<Guid?, List<Category>> lookup)
-    {
-        var children = lookup.TryGetValue(c.Id, out var list) ? list : new List<Category>();
-        return new CategoryDto(
-            c.Id, c.Name, c.Slug, c.Description, c.IconUrl, c.ParentId, c.IsDeleted,
-            children.Select(ch => BuildTree(ch, lookup)).ToList()
-        );
-    }
 }
