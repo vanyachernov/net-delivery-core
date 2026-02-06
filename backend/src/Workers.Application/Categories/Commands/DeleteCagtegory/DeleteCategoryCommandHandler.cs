@@ -1,10 +1,10 @@
 using MediatR;
-using Workers.Application.Categories.Commands.DeleteCategory;
 using Workers.Application.Common.Interfaces;
 using Workers.Domain.Constants;
 using Workers.Domain.Entities.Categories;
 using Workers.Domain.Exceptions;
 
+namespace Workers.Application.Categories.Commands.DeleteCategory;
 
 public class DeleteCategoryCommandHandler(
     ICategoryRepository categoryRepository,

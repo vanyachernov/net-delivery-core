@@ -35,6 +35,7 @@ public class CategoryCache(IConnectionMultiplexer redis) : ICategoryCache
 
     public async Task SetAsync(Guid? parentId, CategoryLoadMode mode, bool overpassIsDeleteFilter, List<CategoryDto> data, CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
         var key = await BuildKey(parentId, mode, overpassIsDeleteFilter);
         var json = System.Text.Json.JsonSerializer.Serialize(data);
         await _db.StringSetAsync(key, json, Ttl);

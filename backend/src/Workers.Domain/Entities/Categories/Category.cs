@@ -32,5 +32,5 @@ public class Category : BaseEntity
     /// </summary>
     public Guid? ParentId { get; set; }
     public Category? Parent { get; set; }
-    public ICollection<Category> SubCategories { get; set; } = new List<Category>();
+    public ICollection<Category> SubCategories { get; set; } = [];
 }

@@ -1,7 +1,6 @@
 using MediatR;
 using Workers.Application.Categories.DTOs;
 using Workers.Application.Common.Interfaces;
-using Workers.Domain.Constants;
 using Workers.Domain.Entities.Categories;
 using Workers.Domain.Exceptions;
 
@@ -17,20 +16,19 @@ public class CreateCategoryCommandHandler(
         CreateCategoryCommand request, 
         CancellationToken cancellationToken = default)
     {
-        if (await repo.SlugExistsAsync(request.Slug, excludeId: null, cancellationToken))
-        {
-            throw new ConflictException("Slug already exists.", ErrorCodes.Category.DuplicateSlug);
-        }
-
         if (request.ParentId is not null && !await repo.ExistsAsync(request.ParentId.Value, cancellationToken))
         {
             throw new BadRequestException("Parent category not found.");
         }
 
+        var categoryId = Guid.NewGuid();
+       
+
         var category = new Category
         {
+            Id = categoryId,
             Name = request.Name.Trim(),
-            Slug = request.Slug.Trim().ToLowerInvariant(),
+            Slug = categoryId.ToString(),
             Description = request.Description?.Trim(),
             IconUrl = request.IconUrl?.Trim(),
             ParentId = request.ParentId,

@@ -7,6 +7,7 @@ using Workers.Application.Categories.Commands.RestoreCategory;
 using Workers.Application.Categories.Commands.UpdateCategory;
 using Workers.Application.Categories.Queries.GetCategories;
 using Workers.Application.Categories.Queries.GetCategoryById;
+using Workers.Domain.Exceptions;
 
     namespace Workers.Api.Controllers;
 
@@ -16,7 +17,6 @@ using Workers.Application.Categories.Queries.GetCategoryById;
         public async Task<IActionResult> Get(
             [FromQuery] Guid? parentId,
             [FromQuery] string mode = "direct",
-            [FromQuery] bool overpassIsDeleteFilter = false,
             CancellationToken cancellationToken = default)
         {
             var parsedMode = mode.Equals("all", StringComparison.OrdinalIgnoreCase)
@@ -24,12 +24,13 @@ using Workers.Application.Categories.Queries.GetCategoryById;
                 : CategoryLoadMode.Direct;
 
             var data = await mediator.Send(
-                new GetCategoriesQuery(parentId, parsedMode, overpassIsDeleteFilter), 
+                new GetCategoriesQuery(parentId, parsedMode, OverpassIsDeleteFilter: false),
                 cancellationToken);
             
             return OkResult(data);
         }
 
+        //[Authorize]
         [HttpGet("admin")]
         public async Task<IActionResult> GetForAdmin(
             [FromQuery] Guid? parentId,
@@ -67,6 +68,7 @@ using Workers.Application.Categories.Queries.GetCategoryById;
                 : OkResult(data);
         }
 
+       // [Authorize]
         [HttpPost] // Admin
         public async Task<IActionResult> Create(
             [FromBody] CreateCategoryCommand categoryCommand,
@@ -79,6 +81,7 @@ using Workers.Application.Categories.Queries.GetCategoryById;
             return OkResult(created);
         }
 
+        //[Authorize]
         [HttpPost("{categoryId:guid}/restore")] // Admin
         public async Task<IActionResult> Restore(
             [FromRoute] Guid categoryId,
@@ -95,13 +98,15 @@ using Workers.Application.Categories.Queries.GetCategoryById;
                 });
         }
 
+        //[Authorize]
         [HttpPut("{categoryId:guid}")] // Admin
         public async Task<IActionResult> Update(
             [FromRoute] Guid categoryId, 
             [FromBody] UpdateCategoryCommand categoryCommand, 
             CancellationToken cancellationToken = default)
         {
-            if (categoryId != categoryCommand.Id) return BadRequestResult("Route id != body id");
+            if (categoryId != categoryCommand.Id)
+                throw new BadRequestException("Route id != body id");
             
             var updated = await mediator.Send(
                 categoryCommand, 
@@ -110,6 +115,7 @@ using Workers.Application.Categories.Queries.GetCategoryById;
             return OkResult(updated);
         }
 
+        //[Authorize]
         [HttpDelete("{categoryId:guid}")] // Admin
         public async Task<IActionResult> Delete(
             [FromRoute] Guid categoryId, 
@@ -126,4 +132,3 @@ using Workers.Application.Categories.Queries.GetCategoryById;
                 });
         }
     }
-

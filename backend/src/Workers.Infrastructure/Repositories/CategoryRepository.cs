@@ -53,7 +53,7 @@ public class CategoryRepository(ApplicationDbContext db) : ICategoryRepository
         var normalized = slug.Trim().ToLowerInvariant();
 
         return db.Categories.AnyAsync(x =>
-            x.Slug.ToLower() == normalized &&
+            x.Slug == normalized &&
             (excludeId == null || x.Id != excludeId.Value), ct);
     }
 
