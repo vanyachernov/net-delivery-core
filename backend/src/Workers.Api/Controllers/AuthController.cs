@@ -16,7 +16,7 @@ public class AuthController(IMediator mediator) : ApiControllerBase
         
         if (!result.Succeeded)
         {
-            return UnauthorizedResult(new { error = result.Error });
+            return UnauthorizedResult(result.Error ?? "Authentication failed");
         }
 
         return OkResult(result);
@@ -29,7 +29,7 @@ public class AuthController(IMediator mediator) : ApiControllerBase
 
         if (!result.Succeeded)
         {
-            return BadRequestResult(new { error = result.Error });
+            return BadRequestResult(result.Error ?? "Registration failed");
         }
         
         return OkResult(result);

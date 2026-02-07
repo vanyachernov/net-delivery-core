@@ -1,12 +1,10 @@
-using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Workers.Api.Models;
 
 namespace Workers.Api.Controllers;
 
 [ApiController]
-[ApiVersion(1.0)]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/[controller]")]
 public abstract class ApiControllerBase : ControllerBase
 {
     protected IActionResult OkResult<T>(T data)
@@ -29,18 +27,13 @@ public abstract class ApiControllerBase : ControllerBase
         return BadRequest(ApiResult.Failure(error));
     }
 
-    protected IActionResult NotFoundResult(string? message = null)
+    protected IActionResult NotFoundResult(string message = "Resource not found")
     {
-        return NotFound(ApiResult.Failure(message ?? "Resource not found", "NOT_FOUND"));
+        return NotFound(ApiResult.Failure(message, "NOT_FOUND"));
     }
 
-    protected IActionResult NotFoundResult(ApiError error)
+    protected IActionResult UnauthorizedResult(string message)
     {
-        return NotFound(ApiResult.Failure(error));
-    }
-
-    protected IActionResult UnauthorizedResult(object? errors)
-    {
-        return Unauthorized(ApiResult.Failure(errors));
+        return Unauthorized(ApiResult.Failure(message, "UNAUTHORIZED"));
     }
 }
