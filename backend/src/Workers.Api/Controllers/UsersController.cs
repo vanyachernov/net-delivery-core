@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Workers.Application.Users.Commands.CreateUser;
 using Workers.Application.Users.Queries.GetUserById;
@@ -24,8 +25,13 @@ public class UsersController(IMediator mediator) : ApiControllerBase
         Guid userId, 
         CancellationToken cancellationToken = default)
     {
-        var result = await mediator.Send(new GetUserByIdQuery(userId), cancellationToken);
-        return result is null ? NotFoundResult("User not found") : OkResult(result);
+        var result = await mediator.Send(
+            new GetUserByIdQuery(userId), 
+            cancellationToken);
+        
+        return result is null 
+            ? NotFoundResult("User not found") 
+            : OkResult(result);
     }
 
     [HttpGet("all")]
@@ -34,7 +40,10 @@ public class UsersController(IMediator mediator) : ApiControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        var result = await mediator.Send(new GetUsersListQuery(page, pageSize), cancellationToken);
+        var result = await mediator.Send(
+            new GetUsersListQuery(page, pageSize), 
+            cancellationToken);
+        
         return OkResult(result);
     }
 }

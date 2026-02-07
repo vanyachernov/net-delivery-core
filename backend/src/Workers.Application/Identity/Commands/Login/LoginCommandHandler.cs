@@ -1,7 +1,5 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Workers.Application.Common.Interfaces;
-using Workers.Application.Identity;
 using Workers.Application.Identity.DTOs;
 using Workers.Application.Common.Models;
 
@@ -12,7 +10,9 @@ public class LoginCommandHandler(
     ILogger<LoginCommandHandler> logger)
     : IRequestHandler<LoginCommand, AuthenticationResult>
 {
-    public async Task<AuthenticationResult> Handle(LoginCommand request, CancellationToken cancellationToken)
+    public async Task<AuthenticationResult> Handle(
+        LoginCommand request, 
+        CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Attempting login for user {Email}", request.Email);
         

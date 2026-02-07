@@ -1,7 +1,5 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Workers.Application.Common.Interfaces;
-using Workers.Application.Identity;
 using Workers.Application.Identity.DTOs;
 using Workers.Application.Common.Models;
 
@@ -12,7 +10,9 @@ public class RegisterCommandHandler(
     ILogger<RegisterCommandHandler> logger)
     : IRequestHandler<RegisterCommand, AuthenticationResult>
 {
-    public async Task<AuthenticationResult> Handle(RegisterCommand request, CancellationToken cancellationToken)
+    public async Task<AuthenticationResult> Handle(
+        RegisterCommand request, 
+        CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Processing registration request for {Email} with role {Role}", request.Email, request.Role);
         

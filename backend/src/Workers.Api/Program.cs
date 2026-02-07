@@ -1,97 +1,44 @@
-using Serilog;
-using Scalar.AspNetCore;
 using Workers.Infrastructure;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Workers.Api.Middlewares;
 using Workers.Application;
+using Workers.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((context, loggerConfiguration) =>
-{
-    loggerConfiguration
-        .ReadFrom.Configuration(context.Configuration)
-        .Enrich.FromLogContext()
-        .WriteTo.Console()
-        .WriteTo.Seq(
-            serverUrl: context.Configuration["Seq:ServerUrl"] ?? "http://localhost:5341")
-        .WriteTo.OpenTelemetry(options =>
-        {
-            options.Endpoint = context.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
-            options.ResourceAttributes = new Dictionary<string, object>
-            {
-                ["service.name"] = "workers-api"
-            };
-        });
-});
+// Configure Logging
+builder.ConfigureLogging();
 
 builder.AddServiceDefaults();
-{
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddOpenApi();
-    builder.Services.AddApplication();
-    builder.AddInfrastructure();
-    builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-    builder.Services.AddProblemDetails();
 
-    builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!))
-        };
-    });
+// Add Services
+builder.Services.AddControllers();
+builder.Services.ConfigureVersioning();
+builder.Services.ConfigureOpenApi();
+builder.Services.AddApplication();
+builder.AddInfrastructure();
 
-    builder.Services.AddAuthorization();
-    builder.Services.AddControllers();
-    
-    builder.Services
-        .AddApiVersioning(options =>
-        {
-            options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
-            options.AssumeDefaultVersionWhenUnspecified = true;
-            options.ReportApiVersions = true;
-            options.ApiVersionReader = Asp.Versioning.ApiVersionReader.Combine(
-                new Asp.Versioning.UrlSegmentApiVersionReader(),
-                new Asp.Versioning.HeaderApiVersionReader("X-Api-Version"),
-                new Asp.Versioning.QueryStringApiVersionReader("api-version"));
-        })
-        .AddApiExplorer(options =>
-        {
-            options.GroupNameFormat = "'v'V";
-            options.SubstituteApiVersionInUrl = true;
-        });
-}
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+// Configure Auth
+builder.Services.ConfigureAuthentication(builder.Configuration);
 
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
-{
-    if (app.Environment.IsDevelopment())
-    {
-        app.MapOpenApi();
-        app.MapScalarApiReference();
-    }
 
-    app.UseExceptionHandler();
-    app.UseHttpsRedirection();
-    app.UseAuthentication();
-    app.UseAuthorization();
-    app.MapControllers();
-    app.Run();
-}
+// Configure Pipeline
+app.UseOpenApi();
+
+app.UseExceptionHandler();
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+// Seed Data
+await app.SeedRolesAsync();
+
+app.Run();
