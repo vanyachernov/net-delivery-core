@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Workers.Application.Users.Commands.CreateUser;
 using Workers.Application.Users.Queries.GetUserById;
 using Workers.Application.Users.Queries.GetUsersList;
+using Workers.Domain.Enums;
 
 namespace Workers.Api.Controllers;
 
 [ApiController]
 [Route("api/users")]
+[Authorize(Roles = nameof(UserRole.Administrator))]
 public class UsersController(IMediator mediator) : ApiControllerBase
 {
     [HttpPost]

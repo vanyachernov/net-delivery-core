@@ -1,13 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Workers.Application.Identity.Commands.Login;
 using Workers.Application.Identity.Commands.Register;
 
 namespace Workers.Api.Controllers;
 
 [ApiController]
-[AllowAnonymous]
 [Route("api/[controller]")]
 public class AuthController(IMediator mediator) : ApiControllerBase
 {

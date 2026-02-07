@@ -23,6 +23,16 @@ builder.Services.AddProblemDetails();
 // Configure Auth
 builder.Services.ConfigureAuthentication(builder.Configuration);
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
@@ -32,6 +42,8 @@ app.UseOpenApi();
 
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,8 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Workers.Domain.Entities.Categories;
 
 namespace Workers.Api.Controllers;
 
+[ApiController]
+[AllowAnonymous]
+[Authorize]
 public class CategoriesController : ApiControllerBase
 {
     [HttpGet]
