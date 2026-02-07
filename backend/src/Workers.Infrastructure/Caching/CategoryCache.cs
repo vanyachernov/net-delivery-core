@@ -1,0 +1,49 @@
+using System.Text.Json;
+using StackExchange.Redis;
+using Workers.Application.Categories.DTOs;
+using Workers.Application.Categories.Queries.GetCategories;
+using Workers.Application.Common.Interfaces;
+
+namespace Workers.Infrastructure.Caching;
+
+public class CategoryCache(IConnectionMultiplexer redis) : ICategoryCache
+{
+    private readonly IDatabase _db = redis.GetDatabase();
+    private static readonly TimeSpan Ttl = TimeSpan.FromMinutes(10);
+    private const string VersionKey = "categories:version";
+
+    private async Task<long> GetVersionAsync()
+    {
+        var v = await _db.StringGetAsync(VersionKey);
+        if (v.IsNullOrEmpty) { await _db.StringSetAsync(VersionKey, 1); return 1; }
+        return (long)v!;
+    }
+
+    private async Task<string> BuildKey(Guid? parentId, CategoryLoadMode mode, bool overpassIsDeleteFilter)
+    {
+        var v = await GetVersionAsync();
+        var parent = parentId?.ToString() ?? "null";
+        return $"categories:v{v}:mode:{mode}:parent:{parent}:deleted:{overpassIsDeleteFilter}";
+    }
+
+    public async Task<List<CategoryDto>?> GetAsync(Guid? parentId, CategoryLoadMode mode, bool overpassIsDeleteFilter, CancellationToken ct)
+    {
+        var key = await BuildKey(parentId, mode, overpassIsDeleteFilter);
+        var json = await _db.StringGetAsync(key);
+        return json.IsNullOrEmpty ? null : JsonSerializer.Deserialize<List<CategoryDto>>(json.ToString());
+    }
+
+    public async Task SetAsync(Guid? parentId, CategoryLoadMode mode, bool overpassIsDeleteFilter, List<CategoryDto> data, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var key = await BuildKey(parentId, mode, overpassIsDeleteFilter);
+        var json = System.Text.Json.JsonSerializer.Serialize(data);
+        await _db.StringSetAsync(key, json, Ttl);
+    }
+
+    public async Task InvalidateAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        await _db.StringIncrementAsync(VersionKey);
+    }
+}

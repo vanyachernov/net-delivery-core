@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using StackExchange.Redis;
 using Workers.Application.Common.Interfaces;
+using Workers.Infrastructure.Caching;
 using Workers.Application.Identity;
 using Workers.Application.Users;
 using Workers.Infrastructure.Persistence;
@@ -30,5 +33,14 @@ public static class DependencyInjection
         builder.Services.AddScoped<ITokenService, TokenService>();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
+        
+        builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+        builder.AddRedisClient("redis");
+        builder.Services.AddSingleton<ICategoryCache, CategoryCache>();
     }
 }
+
+
+
+
+

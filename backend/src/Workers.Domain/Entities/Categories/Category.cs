@@ -32,9 +32,5 @@ public class Category : BaseEntity
     /// </summary>
     public Guid? ParentId { get; set; }
     public Category? Parent { get; set; }
-
-    /// <summary>
-    /// List of nested subcategories.
-    /// </summary>
     public ICollection<Category> SubCategories { get; set; } = [];
 }
