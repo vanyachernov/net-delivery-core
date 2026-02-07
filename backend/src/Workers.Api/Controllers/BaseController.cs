@@ -26,4 +26,9 @@ public abstract class ApiControllerBase : ControllerBase
     {
         return NotFound(ApiResult.Failure(errors ?? new { message = "Resource not found" }));
     }
+
+    protected IActionResult UnauthorizedResult(object? errors)
+    {
+        return Unauthorized(ApiResult.Failure(errors));
+    }
 }

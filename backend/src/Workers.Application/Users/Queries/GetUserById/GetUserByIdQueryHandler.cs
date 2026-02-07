@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Workers.Application.Common.Interfaces;
+using Workers.Application.Users;
 using Workers.Application.Users.DTOs;
 
 namespace Workers.Application.Users.Queries.GetUserById;
@@ -26,13 +27,13 @@ public class GetUserByIdQueryHandler(
 
         return new UserDto(
             user.Id,
-            user.Email,
-            user.PhoneNumber,
+            user.Email ?? string.Empty,
+            user.PhoneNumber ?? string.Empty,
             user.FirstName,
             user.LastName,
             user.Role,
-            user.IsEmailVerified,
-            user.IsPhoneVerified,
+            user.EmailConfirmed,
+            user.PhoneNumberConfirmed,
             user.AvatarUrl
         );
     }

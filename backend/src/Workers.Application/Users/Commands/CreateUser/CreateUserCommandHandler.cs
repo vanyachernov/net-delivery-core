@@ -1,16 +1,14 @@
-using Workers.Application.Common.Models;
-
 namespace Workers.Application.Users.Commands.CreateUser;
 
 using MediatR;
-using Common.Interfaces;
+using Workers.Application.Common.Interfaces;
+using Workers.Application.Identity;
+using Workers.Application.Identity.DTOs;
+using Workers.Application.Users;
 using DTOs;
-using Workers.Domain.Entities.Users;
 using Microsoft.Extensions.Logging;
 
 public class CreateUserCommandHandler(
-    IUserRepository userRepository, 
-    IUnitOfWork unitOfWork,
     IIdentityService identityService,
     ILogger<CreateUserCommandHandler> logger)
     : IRequestHandler<CreateUserCommand, UserDto>
@@ -22,42 +20,37 @@ public class CreateUserCommandHandler(
         logger.LogInformation("Starting the process of creating a new user with email: {Email}", request.Email);
         
         var email = request.Email.Trim().ToLowerInvariant();
-        var phone = request.PhoneNumber.Trim();
+        var phone = request.PhoneNumber?.Trim() ?? string.Empty;
         var role = request.Role.ToString();
 
-        // 1. Create Domain User instance to generate ID
-        var newUser = new User
-        {
-            FirstName = request.FirstName?.Trim(),
-            LastName = request.LastName?.Trim(),
-            AvatarUrl = null
-        };
-        
-        // 2. Create Identity User with same ID
-        var identityDto = new CreateIdentityUserDto(newUser.Id, email, request.Password, phone, role);
-        var (identityId, error) = await identityService.CreateUserAsync(identityDto);
+        var createUserDto = new CreateUserDto(
+            email,
+            request.Password,
+            role,
+            request.FirstName?.Trim(),
+            request.LastName?.Trim(),
+            phone,
+            null
+        );
 
-        if (!string.IsNullOrEmpty(error))
+        var result = await identityService.CreateUserAsync(createUserDto);
+
+        if (!result.Succeeded)
         {
-            logger.LogError("Failed to create identity user: {Error}", error);
-            throw new InvalidOperationException($"Failed to create user: {error}");
+            logger.LogError("Failed to create user: {Error}", result.Error);
+            throw new InvalidOperationException($"Failed to create user: {result.Error}");
         }
 
-        // 3. Save Domain User
-        await userRepository.AddAsync(newUser, cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Map DTO manually or via mapper. 
         return new UserDto(
-            newUser.Id,
+            Guid.Parse(result.UserId!),
             email,
             phone,
-            newUser.FirstName,
-            newUser.LastName,
+            createUserDto.FirstName,
+            createUserDto.LastName,
             request.Role,
             false,
             false,
-            newUser.AvatarUrl
+            createUserDto.AvatarUrl
         );
     }
 }

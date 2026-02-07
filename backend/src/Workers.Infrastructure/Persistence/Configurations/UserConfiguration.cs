@@ -8,16 +8,16 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.HasKey(u => u.Id);
+        // Identity handles Email, PhoneNumber, PasswordHash etc.
         
-        builder.Property(u => u.Email)
-            .IsRequired()
-            .HasMaxLength(255);
-            
-        builder.HasIndex(u => u.Email).IsUnique();
-        
-        builder.Property(u => u.PhoneNumber)
-            .HasMaxLength(20);
+        builder.Property(u => u.FirstName)
+            .HasMaxLength(100);
+
+        builder.Property(u => u.LastName)
+            .HasMaxLength(100);
+
+        builder.Property(u => u.AvatarUrl)
+            .HasMaxLength(500);
 
         builder.HasOne(u => u.WorkerProfile)
             .WithOne(wp => wp.User)

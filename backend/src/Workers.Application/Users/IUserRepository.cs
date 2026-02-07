@@ -1,7 +1,6 @@
-namespace Workers.Application.Common.Interfaces;
-
 using Workers.Domain.Entities.Users;
 
+namespace Workers.Application.Users;
 
 public interface IUserRepository
 {
