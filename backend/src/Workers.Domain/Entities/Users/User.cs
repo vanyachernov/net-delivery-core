@@ -38,6 +38,16 @@ public class User : IdentityUser<Guid>, IBaseEntity
     /// </summary>
     public Company? Company { get; set; }
 
+    /// <summary>
+    /// Refresh Token for generating new access tokens without login.
+    /// </summary>
+    public string? RefreshToken { get; set; }
+
+    /// <summary>
+    /// Expiry time for the Refresh Token.
+    /// </summary>
+    public DateTime? RefreshTokenExpiryTime { get; set; }
+
     #region IBaseEntity implementation
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
