@@ -9,7 +9,7 @@ using Workers.Application.Categories.Queries.GetCategories;
 using Workers.Application.Categories.Queries.GetCategoryById;
 using Workers.Domain.Exceptions;
 
-    namespace Workers.Api.Controllers;
+namespace Workers.Api.Controllers;
 
     public class CategoriesController(IMediator mediator) : ApiControllerBase
     {

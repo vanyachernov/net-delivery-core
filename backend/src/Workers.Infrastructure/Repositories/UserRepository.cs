@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Workers.Application.Common.Interfaces;
+using Workers.Application.Users;
 using Workers.Domain.Entities.Users;
 using Workers.Infrastructure.Persistence;
 

@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Workers.Application.Common.Interfaces;
+using Workers.Domain.Common;
 using Workers.Domain.Entities.Categories;
 using Workers.Domain.Entities.Communication;
 using Workers.Domain.Entities.Companies;
@@ -11,14 +14,13 @@ using Workers.Domain.Entities.Workers;
 
 namespace Workers.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext,IUnitOfWork
+public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>, IUnitOfWork
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
 
-    public DbSet<User> Users => Set<User>();
     public DbSet<WorkerProfile> WorkerProfiles => Set<WorkerProfile>();
     public DbSet<WorkerPortfolioItem> WorkerPortfolioItems => Set<WorkerPortfolioItem>();
     public DbSet<WorkerMedia> WorkerMedia => Set<WorkerMedia>();
@@ -45,11 +47,11 @@ public class ApplicationDbContext : DbContext,IUnitOfWork
     {
         var entries = ChangeTracker
             .Entries()
-            .Where(e => e.State == EntityState.Deleted && e.Entity is Workers.Domain.Common.BaseEntity);
+            .Where(e => e.State == EntityState.Deleted && e.Entity is IBaseEntity);
 
         foreach (var entry in entries)
         {
-            var entity = (Workers.Domain.Common.BaseEntity)entry.Entity;
+            var entity = (IBaseEntity)entry.Entity;
             entry.State = EntityState.Modified;
             entity.IsDeleted = true;
             entity.DeletedAt = DateTime.UtcNow;
@@ -60,5 +62,7 @@ public class ApplicationDbContext : DbContext,IUnitOfWork
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        
+        // Ensure Identity tables use snake_case if configured, though ApplyConfigurations or naming convention should handle it
     }
 }
