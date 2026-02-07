@@ -10,4 +10,6 @@ public interface IIdentityService
     Task<AuthenticationResult> CreateUserAsync(CreateUserDto dto);
 
     Task<AuthenticationResult> LoginAsync(LoginUserDto dto);
+    
+    Task<AuthenticationResult> RefreshTokenAsync(RefreshTokenRequest request);
 }
