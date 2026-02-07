@@ -1,3 +1,5 @@
+using Workers.Domain.Enums;
+
 namespace Workers.Application.Identity.DTOs;
 
 public record RegisterUserDto(
@@ -5,5 +7,5 @@ public record RegisterUserDto(
     string Password, 
     string FirstName, 
     string LastName, 
-    string Role = "Client"
+    UserRole Role = UserRole.Client
 );

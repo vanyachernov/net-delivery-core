@@ -1,11 +1,13 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Workers.Application.Identity.Commands.Login;
 using Workers.Application.Identity.Commands.Register;
 
 namespace Workers.Api.Controllers;
 
 [ApiController]
+[AllowAnonymous]
 [Route("api/[controller]")]
 public class AuthController(IMediator mediator) : ApiControllerBase
 {
@@ -16,7 +18,7 @@ public class AuthController(IMediator mediator) : ApiControllerBase
         
         if (!result.Succeeded)
         {
-            return UnauthorizedResult(new { error = result.Error });
+            return UnauthorizedResult(result.Error ?? "Authentication failed");
         }
 
         return OkResult(result);
@@ -26,10 +28,10 @@ public class AuthController(IMediator mediator) : ApiControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterCommand command)
     {
         var result = await mediator.Send(command);
-
+        
         if (!result.Succeeded)
         {
-            return BadRequestResult(new { error = result.Error });
+            return BadRequestResult(result.Error ?? "Registration failed");
         }
         
         return OkResult(result);

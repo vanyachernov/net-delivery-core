@@ -20,13 +20,12 @@ public class CreateUserCommandHandler(
         logger.LogInformation("Starting the process of creating a new user with email: {Email}", request.Email);
         
         var email = request.Email.Trim().ToLowerInvariant();
-        var phone = request.PhoneNumber?.Trim() ?? string.Empty;
-        var role = request.Role.ToString();
+        var phone = request.PhoneNumber.Trim();
 
         var createUserDto = new CreateUserDto(
             email,
             request.Password,
-            role,
+            request.Role,
             request.FirstName?.Trim(),
             request.LastName?.Trim(),
             phone,
@@ -42,15 +41,15 @@ public class CreateUserCommandHandler(
         }
 
         return new UserDto(
-            Guid.Parse(result.UserId!),
-            email,
-            phone,
-            createUserDto.FirstName,
-            createUserDto.LastName,
-            request.Role,
-            false,
-            false,
-            createUserDto.AvatarUrl
+            Id: Guid.Parse(result.UserId!),
+            Email: email,
+            PhoneNumber: phone,
+            FirstName: createUserDto.FirstName,
+            LastName: createUserDto.LastName,
+            Role: request.Role,
+            IsEmailVerified: false,
+            IsPhoneVerified: false,
+            AvatarUrl: createUserDto.AvatarUrl
         );
     }
 }

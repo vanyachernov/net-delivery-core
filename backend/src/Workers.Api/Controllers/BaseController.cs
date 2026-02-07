@@ -39,8 +39,8 @@ public abstract class ApiControllerBase : ControllerBase
         return NotFound(ApiResult.Failure(error));
     }
 
-    protected IActionResult UnauthorizedResult(object? errors)
+    protected IActionResult UnauthorizedResult(string message)
     {
-        return Unauthorized(ApiResult.Failure(errors));
+        return Unauthorized(ApiResult.Failure(message, "UNAUTHORIZED"));
     }
 }

@@ -1,7 +1,5 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Workers.Application.Common.Interfaces;
-using Workers.Application.Users;
 using Workers.Application.Users.DTOs;
 
 namespace Workers.Application.Users.Queries.GetUsersList;

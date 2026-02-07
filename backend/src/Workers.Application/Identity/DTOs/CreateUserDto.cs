@@ -1,9 +1,11 @@
+using Workers.Domain.Enums;
+
 namespace Workers.Application.Identity.DTOs;
 
 public record CreateUserDto(
     string Email, 
     string Password, 
-    string Role, 
+    UserRole Role, 
     string? FirstName, 
     string? LastName, 
     string? PhoneNumber, 
