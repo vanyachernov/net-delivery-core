@@ -49,7 +49,7 @@ public class GetCategoriesQueryHandler(
 
             var rootParentId = request.ParentId;
 
-            var roots = lookup.GetValueOrDefault(rootParentId) ?? [];
+            var roots = lookup[rootParentId];
 
             result = roots.Select(x => CategoryMapper.BuildTree(x, lookup)).ToList();
         }

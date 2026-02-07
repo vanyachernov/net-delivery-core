@@ -17,9 +17,9 @@ public static class CategoryMapper
             SubCategories: null
         );
 
-    public static CategoryDto BuildTree(Category category, Dictionary<Guid?, List<Category>> lookup)
+    public static CategoryDto BuildTree(Category category, ILookup<Guid?, Category> lookup)
     {
-        var children = lookup.GetValueOrDefault(category.Id) ?? [];
+        var children = lookup[category.Id];
 
         return new CategoryDto(
             category.Id,
@@ -33,7 +33,6 @@ public static class CategoryMapper
         );
     }
 
-    public static Dictionary<Guid?, List<Category>> BuildLookup(List<Category> categories) =>
-        categories.GroupBy(x => x.ParentId)
-            .ToDictionary(g => g.Key, g => g.ToList());
+    public static ILookup<Guid?, Category> BuildLookup(List<Category> categories) =>
+        categories.ToLookup(x => x.ParentId);
 }
