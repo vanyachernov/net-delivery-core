@@ -38,4 +38,9 @@ public abstract class ApiControllerBase : ControllerBase
     {
         return NotFound(ApiResult.Failure(error));
     }
+
+    protected IActionResult UnauthorizedResult(object? errors)
+    {
+        return Unauthorized(ApiResult.Failure(errors));
+    }
 }

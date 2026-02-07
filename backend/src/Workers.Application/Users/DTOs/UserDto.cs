@@ -2,7 +2,6 @@ namespace Workers.Application.Users.DTOs;
 
 using Workers.Domain.Enums;
 
-
 public record UserDto(
     Guid Id,
     string Email,

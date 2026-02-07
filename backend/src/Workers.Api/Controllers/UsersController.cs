@@ -10,18 +10,14 @@ public class UsersController(IMediator mediator) : ApiControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Create(
-        [FromBody] CreateUserCommand userCommand, 
+        [FromBody] CreateUserCommand command, 
         CancellationToken cancellationToken = default)
     {
-        var userDataDto = await mediator.Send(
-            userCommand, 
-            cancellationToken);
-        
-        return OkResult(userDataDto);
+        var result = await mediator.Send(command, cancellationToken);
+        return OkResult(result);
     }
-        
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{userId:guid}")]
     public async Task<IActionResult> GetById(
         Guid id, 
         CancellationToken cancellationToken = default)
@@ -35,17 +31,13 @@ public class UsersController(IMediator mediator) : ApiControllerBase
             : OkResult(userDataDto);
     }
 
-    [HttpGet]
+    [HttpGet("all")]
     public async Task<IActionResult> GetList(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        var usersDataDto = await mediator.Send(
-            new GetUsersListQuery(page, pageSize), 
-            cancellationToken);
-        
-        return OkResult(usersDataDto);
+        var result = await mediator.Send(new GetUsersListQuery(page, pageSize), cancellationToken);
+        return OkResult(result);
     }
 }
-    

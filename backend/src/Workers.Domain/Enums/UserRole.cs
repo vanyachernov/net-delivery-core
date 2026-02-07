@@ -5,7 +5,11 @@ namespace Workers.Domain.Enums;
 /// </summary>
 public enum UserRole
 {
+    Guest = 0,
     Client = 1,
-    Worker = 2,
-    Company = 3
+    IndividualMaster = 2,
+    Company = 3,
+    EnterpriseCompany = 4,
+    Administrator = 5,
+    Moderator = 6
 }

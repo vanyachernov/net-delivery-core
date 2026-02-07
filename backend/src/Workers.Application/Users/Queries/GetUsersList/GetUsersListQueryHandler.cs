@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Workers.Application.Common.Interfaces;
+using Workers.Application.Users;
 using Workers.Application.Users.DTOs;
 
 namespace Workers.Application.Users.Queries.GetUsersList;
@@ -29,13 +30,13 @@ public class GetUsersListQueryHandler(
 
         return userEntities.Select(u => new UserDto(
             u.Id,
-            u.Email,
-            u.PhoneNumber,
+            u.Email ?? string.Empty,
+            u.PhoneNumber ?? string.Empty,
             u.FirstName,
             u.LastName,
             u.Role,
-            u.IsEmailVerified,
-            u.IsPhoneVerified,
+            u.EmailConfirmed,
+            u.PhoneNumberConfirmed,
             u.AvatarUrl
         )).ToList();
     }
